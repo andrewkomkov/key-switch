@@ -10,6 +10,8 @@ no network connections.
 | Tap Shift two times | KeySwitch types the last word again in the other layout: `ghbdtn` becomes `привет`. |
 | Type a word in the incorrect layout, then press Space or Return | KeySwitch corrects the word and changes the layout. |
 | Tap Shift two times after an automatic correction | The original word comes back. KeySwitch adds the word to the exceptions. |
+| Tap Shift three times or more in one series | Each tap after the second one converts one more word to the left. |
+| Tap Option two times | The case of the last word changes: `hello`, `Hello`, `HELLO`. A word such as `hELLO` becomes `Hello`. |
 
 ## Requirements
 
