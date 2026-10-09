@@ -13,6 +13,11 @@ no network connections.
 | Tap Shift three times or more in one series | Each tap after the second one converts one more word to the left. |
 | Tap Option two times | The case of the last word changes: `hello`, `Hello`, `HELLO`. A word such as `hELLO` becomes `Hello`. |
 
+The Shift gesture and the Option gesture also work on selected text. Select the text.
+Then use the gesture before you type. KeySwitch reads the selection through the Accessibility
+API. If an app gives no answer, KeySwitch copies the selection, pastes the result, and puts
+the old content back in the clipboard.
+
 ## Requirements
 
 - macOS 26 or later.
