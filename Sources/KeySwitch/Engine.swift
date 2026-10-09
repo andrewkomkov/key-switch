@@ -30,6 +30,8 @@ final class Engine {
     @ObservationIgnored private var layouts: [Layout] = []
     /// What the word looked like before the detector converted it.
     @ObservationIgnored private var autoConvertedFrom = ""
+    /// Bundle identifier of the app that gets the keys. Can be KeySwitch.
+    @ObservationIgnored private var focusedBundleID: String?
 
     private enum KeyCode {
         static let space: UInt16 = 49
@@ -137,6 +139,7 @@ final class Engine {
     private func applicationActivated(_ app: NSRunningApplication?) {
         buffer.reset()
         recognizer.interrupt()
+        focusedBundleID = app?.bundleIdentifier
         if let app, app.processIdentifier != ProcessInfo.processInfo.processIdentifier {
             frontApp = app
         }
@@ -249,7 +252,7 @@ final class Engine {
         guard settings.autoSwitch, let detector,
               !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
               !buffer.autoConverted, !buffer.manuallyConverted,
-              !settings.isExcluded(frontApp?.bundleIdentifier),
+              !settings.isExcluded(focusedBundleID),
               let current = InputSources.current(), detector.supports(current.language),
               let other = layouts.first(where: { $0.language != current.language && detector.supports($0.language) })
         else { return false }
