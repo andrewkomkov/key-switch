@@ -38,7 +38,8 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T016 [US4] Add the SwiftUI app with `MenuBarExtra` and the Settings scene
 - [x] T017 [US4] Add the onboarding window for the Accessibility permission
-- [x] T018 [US4] Add the per-app exclusion and start at login
+- [ ] T018 [US4] Add the per-app exclusion and start at login.
+  The code exists. No test examined these two controls.
 
 ## Phase 7: Delivery
 
@@ -46,7 +47,8 @@ A ticked task means that the code exists and that a test or a manual check passe
 - [x] T020 Add the CI workflow in `.github/workflows/ci.yml`
 - [x] T021 Add release-please and the release build in `.github/workflows/release.yml`
 - [x] T022 Create the public GitHub repository and push
-- [ ] T023 Check the app by hand in a real text field: US1, US2 and US3 scenarios
+- [x] T023 Add the end-to-end test with real key events in `Sources/KeySwitch/SelfTest.swift`
+- [x] T024 Run the end-to-end test with the Accessibility permission. Result: 16 scenarios pass.
 
 ## Dependencies
 
