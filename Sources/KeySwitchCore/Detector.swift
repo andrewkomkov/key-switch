@@ -22,6 +22,10 @@ public struct Detector: Sendable {
 
     private let models: [String: LanguageModel]
     public var thresholds = Thresholds()
+    /// Words that the user taught, by language. Each one counts as a frequent word.
+    public var learned: [String: Set<String>] = [:]
+    public static let learnedRank = 4000
+    public static let learnableLength = 3...24
 
     public init(models: [LanguageModel]) {
         self.models = Dictionary(uniqueKeysWithValues: models.map { ($0.language, $0) })
@@ -33,7 +37,31 @@ public struct Detector: Sendable {
 
     /// Position of the word in the frequency list of the language, 0 is the most frequent.
     public func rank(of word: String, language: String) -> Int? {
-        models[language]?.rank(of: word)
+        models[language].flatMap { rank(word, in: $0) }
+    }
+
+    /// The word is new to the dictionary and is not the other layout by mistake: the other
+    /// reading is not a word, and one of the two readings settles which language it is.
+    /// - Parameter confirmed: the user chose this reading by hand, so it needs no second opinion.
+    public func isLearnable(
+        _ word: String, language: String, other: String, otherLanguage: String, confirmed: Bool = false
+    ) -> Bool {
+        guard let model = models[language], let otherModel = models[otherLanguage],
+              Self.learnableLength.contains(word.count), word.allSatisfy(model.isLetter),
+              rank(word, in: model) == nil
+        else { return false }
+        let otherCore = Self.core(of: other)
+        if worstRank(of: otherCore, in: otherModel) != nil { return false }
+        if confirmed { return true }
+        let looksRight = (model.score(word) ?? -.infinity) >= thresholds.minScore
+        let otherLooksWrong = (otherModel.score(otherCore) ?? -.infinity) < thresholds.minScore
+        return looksRight || otherLooksWrong
+    }
+
+    private func rank(_ word: String, in model: LanguageModel) -> Int? {
+        if let rank = model.rank(of: word) { return rank }
+        let isLearned = learned[model.language]?.contains(LanguageModel.normalize(word)) ?? false
+        return isLearned ? Self.learnedRank : nil
     }
 
     /// - Parameters:
@@ -54,8 +82,8 @@ public struct Detector: Sendable {
         let otherCore = Self.core(of: other)
         guard otherCore.count > 1 else { return false }
 
-        let otherRank = Self.worstRank(of: otherCore, in: otherModel)
-        if let currentRank = Self.worstRank(of: currentCore, in: currentModel) {
+        let otherRank = worstRank(of: otherCore, in: otherModel)
+        if let currentRank = worstRank(of: currentCore, in: currentModel) {
             // Both readings are words, for example `vs` and `мы`. Convert only if the
             // current one is rare and the other one is far more frequent.
             guard let otherRank else { return false }
@@ -74,7 +102,7 @@ public struct Detector: Sendable {
         var currentScore = -Float.infinity
         for run in currentCore.split(whereSeparator: { !currentModel.isLetter($0) }) where run.count > 2 {
             let run = String(run)
-            if let rank = currentModel.rank(of: run), rank < thresholds.knownRunMaxRank { return false }
+            if let rank = rank(run, in: currentModel), rank < thresholds.knownRunMaxRank { return false }
             currentScore = max(currentScore, currentModel.score(run) ?? -.infinity)
         }
         return otherScore - currentScore >= thresholds.margin
@@ -91,15 +119,15 @@ public struct Detector: Sendable {
 
     /// Rank of the least frequent part of a word such as `don't` or `кто-то`.
     /// `nil` if a part is not in the dictionary.
-    private static func worstRank(of core: String, in model: LanguageModel) -> Int? {
+    private func worstRank(of core: String, in model: LanguageModel) -> Int? {
         var worst = 0
         for part in core.split(separator: "-", omittingEmptySubsequences: false) {
             var stem = part
             if let apostrophe = part.firstIndex(where: { $0 == "'" || $0 == "’" }) {
-                guard contractions.contains(String(part[part.index(after: apostrophe)...])) else { return nil }
+                guard Self.contractions.contains(String(part[part.index(after: apostrophe)...])) else { return nil }
                 stem = part[..<apostrophe]
             }
-            guard let rank = model.rank(of: String(stem)) else { return nil }
+            guard let rank = rank(String(stem), in: model) else { return nil }
             worst = max(worst, rank)
         }
         return worst

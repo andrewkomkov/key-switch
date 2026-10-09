@@ -8,6 +8,10 @@ KeySwitch reads each key that the user presses. The word buffer stays in memory 
 the current word only. KeySwitch MUST keep keystrokes out of the disk, the log and the
 network. The app makes no network requests.
 
+There are two exceptions. The app stores the words that the user reverted. The app also
+stores the words that it learned, but only after the user sets learning to on. In the two
+lists, an entry is one word. The user can see and remove each entry.
+
 ### II. Keep the text of the user safe
 
 A conversion replaces text that the user typed. The gesture for a manual conversion MUST
@@ -46,4 +50,7 @@ check passed.
 This constitution is more important than convenience. An amendment is a pull request that
 changes this file and gives the reason. The amendment also changes the version below.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-09 | **Last Amended**: 2026-10-09
+**Version**: 1.1.0 | **Ratified**: 2026-10-09 | **Last Amended**: 2026-10-09
+
+Amendment 1.1.0: principle I permits the list of learned words. Feature 006 needs it, and
+the user asked for that feature.

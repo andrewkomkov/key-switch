@@ -13,6 +13,11 @@ no network connections.
 | Tap Shift three times or more in one series | Each tap after the second one converts one more word to the left. |
 | Tap Option two times | The case of the last word changes: `hello`, `Hello`, `HELLO`. A word such as `hELLO` becomes `Hello`. |
 
+The Shift gesture and the Option gesture also work on selected text. Select the text.
+Then use the gesture before you type. KeySwitch reads the selection through the Accessibility
+API. If an app gives no answer, KeySwitch copies the selection, pastes the result, and puts
+the old content back in the clipboard.
+
 ## Requirements
 
 - macOS 26 or later.
@@ -93,10 +98,25 @@ KeySwitch keeps these words as typed:
 
 Tap Shift two times to get the typed word back. The word then becomes an exception.
 
+## Learned words
+
+This option is off by default. Set "Learn the words that I type often" to on in the settings.
+
+The dictionary comes from film subtitles and does not have your work words. KeySwitch learns
+a word in two cases:
+
+- You type an unknown word three times in one session, and its other reading is not a word.
+- You convert a word with a double Shift tap.
+
+A learned word counts as a frequent dictionary word. For example, after you learn `гит`,
+KeySwitch converts `ubn` to `гит`. The "Learned" tab of the settings shows the list. You can
+remove each word there.
+
 ## Privacy
 
 - KeySwitch keeps the keys of the current word in memory. It deletes them when the caret moves.
-- The keys stay out of the disk and out of the log.
+- The keys stay out of the disk and out of the log. The disk gets only single words: the
+  exceptions, and the learned words when learning is on.
 - KeySwitch makes no network connections.
 - With typo correction on, a rare word goes to the spelling checker of macOS on this Mac.
 - macOS hides the keys of password fields from KeySwitch.

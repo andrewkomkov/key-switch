@@ -43,3 +43,9 @@
 "Gestures" = "Жесты";
 "Double-tap Option to change the case" = "Двойной Option меняет регистр";
 "Each more Shift tap in a row takes one more word to the left. Each more Option tap gives the next case: hello, Hello, HELLO." = "Каждое следующее нажатие Shift подряд захватывает ещё одно слово слева. Каждое следующее нажатие Option даёт следующий регистр: hello, Hello, HELLO.";
+"Apply the gestures to the selected text" = "Применять жесты к выделенному тексту";
+"Learned" = "Выученные";
+"Learn the words that I type often" = "Запоминать слова, которые я часто печатаю";
+"A word that you type three times, or convert by hand, goes to the Learned list and counts as a dictionary word. The list is stored on this Mac." = "Слово, которое вы напечатали три раза или исправили вручную, попадает в список «Выученные» и считается словарным. Список хранится на этом Mac.";
+"No learned words" = "Нет выученных слов";
+"KeySwitch treats these words as dictionary words. Remove a word that got here by mistake." = "KeySwitch считает эти слова словарными. Удалите слово, если оно попало сюда по ошибке.";

@@ -1,4 +1,5 @@
 import AppKit
+import KeySwitchCore
 
 /// End-to-end check of the real pipeline: posts hardware-level key events into a text view
 /// of this app and compares what arrives there. Needs the Accessibility permission.
@@ -37,6 +38,12 @@ final class SelfTest {
         let saved = (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts,
                      settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions)
         let savedFixTypos = settings.fixTypos, savedCaseGesture = settings.caseGesture
+        let savedSelectionGestures = settings.selectionGestures
+        let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
+        settings.learnWords = false
+        settings.learnedWords = []
+        let savedClipboard = Selection.snapshot()
+        settings.selectionGestures = true
         settings.fixTypos = false
         settings.caseGesture = true
         let savedLayout = InputSources.current()
@@ -49,6 +56,10 @@ final class SelfTest {
          settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions) = saved
         settings.fixTypos = savedFixTypos
         settings.caseGesture = savedCaseGesture
+        settings.selectionGestures = savedSelectionGestures
+        settings.learnWords = savedLearnWords
+        settings.learnedWords = savedLearnedWords
+        Selection.restore(savedClipboard)
         if let savedLayout { InputSources.select(savedLayout) }
         lines.append(failures == 0 ? "RESULT: PASS" : "RESULT: FAIL (\(failures))")
         let report = lines.joined(separator: "\n") + "\n"
@@ -208,6 +219,83 @@ final class SelfTest {
         expect("case option off: nothing changes", text: "hello", layout: english)
         settings.caseGesture = true
         settings.autoSwitch = true
+
+        for throughClipboard in [false, true] {
+            Engine.shared.selectionThroughClipboardOnly = throughClipboard
+            let path = throughClipboard ? "clipboard" : "accessibility"
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString("sentinel", forType: .string)
+
+            await start(in: english, text: "ghbdtn vbh\nntcn")
+            await tap(shift, .maskShift, times: 2, settle: 1.2)
+            expect("selection (\(path)): double Shift converts two lines", text: "привет мир\nтест", layout: russian)
+            await tap(shift, .maskShift, times: 2, settle: 1.2)
+            expect("selection (\(path)): a second gesture brings the text back", text: "ghbdtn vbh\nntcn", layout: english)
+            check("selection (\(path)): the clipboard keeps its content",
+                  NSPasteboard.general.string(forType: .string) == "sentinel",
+                  "\(NSPasteboard.general.string(forType: .string) ?? "nil")")
+
+            await start(in: russian, text: "руддщ")
+            await tap(shift, .maskShift, times: 2, settle: 1.2)
+            expect("selection (\(path)): Russian keys become English", text: "hello", layout: english)
+
+            await start(in: english, text: "hello world")
+            await tap(option, .maskAlternate, times: 2, settle: 1.2)
+            expect("selection (\(path)): double Option changes the case", text: "Hello world", layout: english)
+            await tap(option, .maskAlternate, times: 2, settle: 1.2)
+            expect("selection (\(path)): a second gesture goes on in the cycle", text: "HELLO WORLD", layout: english)
+
+            await start(in: english, text: "ghbdtn", select: false)
+            await tap(shift, .maskShift, times: 2, settle: 1.2)
+            expect("selection (\(path)): no selection, no change", text: "ghbdtn", layout: russian)
+        }
+        Engine.shared.selectionThroughClipboardOnly = false
+
+        settings.selectionGestures = false
+        await start(in: english, text: "ghbdtn")
+        await tap(shift, .maskShift, times: 2, settle: 1.2)
+        expect("selection option off: nothing changes", text: "ghbdtn", layout: russian)
+        settings.selectionGestures = true
+
+        let git = keys(for: "гит", in: russian), approve = keys(for: "апрув", in: russian)
+        let gitThreeTimes = git + [space] + git + [space] + git + [space]
+        await start(in: russian)
+        await type(gitThreeTimes)
+        check("learning off: the list stays empty", settings.learnedWords.isEmpty, "\(settings.learnedWords)")
+
+        settings.learnWords = true
+        await start(in: english)
+        await type(git + [space])
+        expect("learning: an unknown short word stays before it is learned", text: "ubn ", layout: english)
+        await start(in: russian)
+        await type(gitThreeTimes)
+        expect("learning: three uses in the right layout stay as typed", text: "гит гит гит ", layout: russian)
+        check("learning: the third use puts the word in the list", settings.learnedWords == ["ru:гит"], "\(settings.learnedWords)")
+        await start(in: english)
+        await type(git + [space])
+        expect("learning: the learned word is converted from the other layout", text: "гит ", layout: russian)
+
+        settings.learnedWords = []
+        await start(in: english)
+        await type(git + [space])
+        expect("learning: a removed word is unknown again", text: "ubn ", layout: english)
+
+        await start(in: english)
+        await type(approve)
+        await doubleTapShift()
+        expect("learning: a manual conversion", text: "апрув", layout: russian)
+        check("learning: the manual conversion puts the word in the list", settings.learnedWords == ["ru:апрув"], "\(settings.learnedWords)")
+        await start(in: english)
+        await type(approve + [space])
+        expect("learning: the word is converted by itself from then on", text: "апрув ", layout: russian)
+
+        await start(in: english)
+        await type(approve)
+        await doubleTapShift()
+        await pause(0.6)
+        await doubleTapShift()
+        expect("learning: a conversion and a conversion back", text: "fghed", layout: english)
+        check("learning: the conversion back teaches nothing", settings.learnedWords == [], "\(settings.learnedWords)")
     }
 
     // MARK: - Driving
@@ -229,13 +317,23 @@ final class SelfTest {
         self.window = window
         // An accessory app cannot reliably take the keyboard focus.
         NSApp.setActivationPolicy(.regular)
+        // Command-C and Command-V reach the text view through the Edit menu.
+        let edit = NSMenu(title: "Edit")
+        edit.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        edit.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        let main = NSMenu()
+        main.addItem(NSMenuItem())
+        main.addItem(NSMenuItem())
+        main.items[1].submenu = edit
+        NSApp.mainMenu = main
     }
 
     private var hasFocus: Bool {
         NSApp.isActive && window?.isKeyWindow == true && window?.firstResponder === textView
     }
 
-    private func start(in layout: Layout) async {
+    /// - Parameter text: text to put in the view, fully selected unless `select` is false.
+    private func start(in layout: Layout, text: String = "", select: Bool = true) async {
         guard !lostFocus else { return }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
@@ -243,9 +341,18 @@ final class SelfTest {
         for _ in 0..<30 where !hasFocus { await pause(0.1) }
         lostFocus = !hasFocus
         Engine.shared.resetInputState()
-        textView.string = ""
+        textView.string = text
+        textView.setSelectedRange(NSRange(location: select ? 0 : (text as NSString).length,
+                                          length: select ? (text as NSString).length : 0))
         InputSources.select(layout)
         await pause(0.6)
+    }
+
+    /// The keys that type the text in the layout, without Shift.
+    private func keys(for text: String, in layout: Layout) -> [CGKeyCode] {
+        text.compactMap { character in
+            (CGKeyCode(0)..<52).first { layout.text(for: [Keystroke(keyCode: $0)]) == String(character) }
+        }
     }
 
     private func type(_ keys: [CGKeyCode], shift: Bool = false) async {
