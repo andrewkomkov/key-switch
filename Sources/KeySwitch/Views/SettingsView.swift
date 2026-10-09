@@ -33,6 +33,7 @@ private struct GeneralSettings: View {
                 Toggle("Tap Shift to switch the layout", isOn: $settings.shiftSwitches)
                 Toggle("Double-tap Shift to retype the last word", isOn: $settings.doubleShiftConverts)
                 Toggle("Double-tap Option to change the case", isOn: $settings.caseGesture)
+                Toggle("Apply the gestures to the selected text", isOn: $settings.selectionGestures)
             } header: {
                 Text("Gestures")
             } footer: {

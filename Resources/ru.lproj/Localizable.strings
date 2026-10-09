@@ -43,3 +43,4 @@
 "Gestures" = "Жесты";
 "Double-tap Option to change the case" = "Двойной Option меняет регистр";
 "Each more Shift tap in a row takes one more word to the left. Each more Option tap gives the next case: hello, Hello, HELLO." = "Каждое следующее нажатие Shift подряд захватывает ещё одно слово слева. Каждое следующее нажатие Option даёт следующий регистр: hello, Hello, HELLO.";
+"Apply the gestures to the selected text" = "Применять жесты к выделенному тексту";
