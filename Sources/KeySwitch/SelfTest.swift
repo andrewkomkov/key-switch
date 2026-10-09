@@ -18,6 +18,10 @@ final class SelfTest {
     // ANSI key codes. The same keys type `ghbdtn` in English and `привет` in Russian.
     private let privet: [CGKeyCode] = [5, 4, 11, 2, 17, 45]
     private let hello: [CGKeyCode] = [4, 14, 37, 37, 31]
+    // `recieve` in English.
+    private let recieve: [CGKeyCode] = [15, 14, 8, 34, 14, 9, 14]
+    // `севодня` in Russian.
+    private let sevodnya: [CGKeyCode] = [8, 17, 2, 38, 37, 16, 6]
     private let space: CGKeyCode = 49
     private let returnKey: CGKeyCode = 36
     private let shift: CGKeyCode = 56
@@ -29,6 +33,8 @@ final class SelfTest {
     func run() async {
         let saved = (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts,
                      settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions)
+        let savedFixTypos = settings.fixTypos
+        settings.fixTypos = false
         let savedLayout = InputSources.current()
         (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts) = (true, true, true)
         (settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions) = (true, false, [], [])
@@ -37,6 +43,7 @@ final class SelfTest {
 
         (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts,
          settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions) = saved
+        settings.fixTypos = savedFixTypos
         if let savedLayout { InputSources.select(savedLayout) }
         lines.append(failures == 0 ? "RESULT: PASS" : "RESULT: FAIL (\(failures))")
         let report = lines.joined(separator: "\n") + "\n"
@@ -128,6 +135,34 @@ final class SelfTest {
         await start(in: english)
         await type(privet + [space])
         expect("an exception is not converted again", text: "ghbdtn ", layout: english)
+        settings.exceptions = []
+
+        await start(in: english)
+        await type(recieve + [space])
+        expect("typo option off: nothing changes", text: "recieve ", layout: english)
+
+        settings.fixTypos = true
+        await start(in: english)
+        await type(recieve + [space])
+        expect("typo: recieve + Space in English", text: "receive ", layout: english)
+        await doubleTapShift()
+        expect("typo: double Shift brings the typed word back", text: "recieve ", layout: english)
+        check("typo: the reverted word is an exception", settings.exceptions == ["recieve"], "\(settings.exceptions)")
+        await start(in: english)
+        await type(recieve + [space])
+        expect("typo: an exception stays as typed", text: "recieve ", layout: english)
+
+        await start(in: russian)
+        await type(sevodnya + [space])
+        expect("typo: севодня + Space in Russian", text: "сегодня ", layout: russian)
+
+        await start(in: english)
+        await type([7, 12, 6, 17, returnKey])
+        expect("typo: a word with no sure correction stays", text: "xqzt\n", layout: english)
+
+        await start(in: english)
+        await type(hello + [space] + privet + [space])
+        expect("typo option on: the layout correction still works", text: "hello привет ", layout: russian)
     }
 
     // MARK: - Driving

@@ -30,6 +30,11 @@ final class Engine {
     @ObservationIgnored private var layouts: [Layout] = []
     /// What the word looked like before the detector converted it.
     @ObservationIgnored private var autoConvertedFrom = ""
+    /// Terms that the typo correction must leave alone.
+    @ObservationIgnored private var technicalWords: Set<String> = []
+    /// The typed and the shown text of the word whose spelling was corrected.
+    @ObservationIgnored private var typo: (typed: String, shown: String)?
+    @ObservationIgnored private var layoutBeforeTap: Layout?
     /// Bundle identifier of the app that gets the keys. Can be KeySwitch.
     @ObservationIgnored private var focusedBundleID: String?
 
@@ -57,8 +62,11 @@ final class Engine {
         applicationActivated(NSWorkspace.shared.frontmostApplication)
 
         Task.detached(priority: .userInitiated) {
-            let detector = Self.loadDetector()
-            await MainActor.run { self.detector = detector }
+            let (detector, technicalWords) = Self.loadDetector()
+            await MainActor.run {
+                self.detector = detector
+                self.technicalWords = technicalWords
+            }
         }
 
         refreshTrust()
@@ -81,16 +89,18 @@ final class Engine {
 
     // MARK: - Setup
 
-    private nonisolated static func loadDetector() -> Detector? {
+    private nonisolated static func loadDetector() -> (Detector?, Set<String>) {
         func list(_ name: String) -> String? {
             guard let url = Bundle.main.url(forResource: name, withExtension: "txt") else { return nil }
             return try? String(contentsOf: url, encoding: .utf8)
         }
-        guard let russian = list("ru"), let english = list("en") else { return nil }
-        return Detector(models: [
+        guard let russian = list("ru"), let english = list("en") else { return (nil, []) }
+        let technical = list("en-tech") ?? ""
+        let detector = Detector(models: [
             .russian(wordList: russian),
-            .english(wordList: english + (list("en-tech") ?? "")),
+            .english(wordList: english + technical),
         ])
+        return (detector, Set(technical.split(separator: "\n").map(String.init)))
     }
 
     private func refreshTrust() {
@@ -177,9 +187,14 @@ final class Engine {
         case .none:
             break
         case .switchLayout:
+            layoutBeforeTap = InputSources.current()
             if settings.shiftSwitches { selectNextLayout() }
         case .convert:
             guard settings.doubleShiftConverts else { break }
+            if buffer.typoCorrected {
+                revertTypo()
+                break
+            }
             // The first tap already selected the target layout, unless that gesture is off.
             if !settings.shiftSwitches { selectNextLayout() }
             convertManually()
@@ -200,14 +215,14 @@ final class Engine {
         if keyCode == KeyCode.backspace {
             buffer.deleteLast()
         } else if keyCode == KeyCode.space {
-            if convertAutomatically() {
+            if convertAutomatically() || correctTypo() {
                 Typist.press(keyCode)
                 buffer.append(key, isSpace: true)
                 return false
             }
             buffer.append(key, isSpace: true)
         } else if KeyCode.returnKeys.contains(keyCode) {
-            let converted = convertAutomatically()
+            let converted = convertAutomatically() || correctTypo()
             buffer.reset()
             if converted {
                 Typist.press(keyCode, flags: flags.intersection(.maskShift))
@@ -272,6 +287,44 @@ final class Engine {
         buffer.autoConverted = true
         autoConvertedFrom = Detector.core(of: currentText)
         return true
+    }
+
+    /// Replaces the finished word with the confident correction of the spelling checker.
+    private func correctTypo() -> Bool {
+        guard settings.fixTypos, let detector,
+              !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
+              !buffer.autoConverted, !buffer.manuallyConverted, !buffer.typoCorrected,
+              !settings.isExcluded(focusedBundleID),
+              let layout = InputSources.current()
+        else { return false }
+
+        let keys = buffer.word
+        let typed = layout.text(for: keys)
+        guard typed.count == keys.count,
+              let shown = TypoPolicy.correctedText(
+                for: typed, exceptions: settings.exceptionSet,
+                rank: { detector.rank(of: $0, language: layout.language) },
+                isProtected: { self.technicalWords.contains($0.lowercased()) },
+                suggest: { SpellCorrector.correction(for: $0, language: layout.language) })
+        else { return false }
+
+        replace(count: keys.count, with: shown)
+        buffer.typoCorrected = true
+        typo = (typed, shown)
+        return true
+    }
+
+    /// Brings back the typed spelling. The first Shift tap changed the layout, and the typo
+    /// was in the right one, so the layout goes back too.
+    private func revertTypo() {
+        guard let typo else { return }
+        let spaces = String(repeating: " ", count: buffer.trailingSpaces.count)
+        replace(count: typo.shown.count + spaces.count, with: typo.typed + spaces)
+        settings.addException(Detector.core(of: typo.typed))
+        buffer.typoCorrected = false
+        buffer.manuallyConverted = true
+        self.typo = nil
+        if settings.shiftSwitches, let layoutBeforeTap { InputSources.select(layoutBeforeTap) }
     }
 
     private func replace(count: Int, with text: String) {

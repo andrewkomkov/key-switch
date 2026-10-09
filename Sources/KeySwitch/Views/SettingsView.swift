@@ -12,7 +12,7 @@ struct SettingsView: View {
             Tab("About", systemImage: "info.circle") { AboutView() }
         }
         .scenePadding()
-        .frame(width: 480, height: 400)
+        .frame(width: 480, height: 520)
     }
 }
 
@@ -35,13 +35,20 @@ private struct GeneralSettings: View {
             }
             Section {
                 Toggle("Switch the layout automatically", isOn: $settings.autoSwitch)
-                Toggle("Play a sound on conversion", isOn: $settings.playSound)
             } header: {
                 Text("Automatic")
             } footer: {
                 Text("When you finish a word with Space or Return, KeySwitch checks it against a dictionary and a letter model. Double-tap Shift to undo: the word becomes an exception.")
             }
             Section {
+                Toggle("Fix typos", isOn: $settings.fixTypos)
+            } header: {
+                Text("Spelling")
+            } footer: {
+                Text("Uses the macOS spelling checker and replaces a word only when the correction is a frequent word. Double-tap Shift to undo: the word becomes an exception.")
+            }
+            Section {
+                Toggle("Play a sound on conversion", isOn: $settings.playSound)
                 LabeledContent("Conversions this session", value: engine.conversions, format: .number)
             }
         }

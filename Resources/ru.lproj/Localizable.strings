@@ -37,3 +37,6 @@
 "Version %@" = "Версия %@";
 "Keystrokes stay in memory for one word. Nothing is saved or sent." = "Нажатия хранятся в памяти в пределах одного слова. Ничего не сохраняется и не отправляется.";
 "Source code on GitHub" = "Исходный код на GitHub";
+"Fix typos" = "Исправлять опечатки";
+"Spelling" = "Правописание";
+"Uses the macOS spelling checker and replaces a word only when the correction is a frequent word. Double-tap Shift to undo: the word becomes an exception." = "Использует проверку правописания macOS и заменяет слово, только если исправление — частое слово. Двойной Shift отменяет замену, и слово попадает в исключения.";
