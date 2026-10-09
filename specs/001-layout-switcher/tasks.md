@@ -38,8 +38,8 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T016 [US4] Add the SwiftUI app with `MenuBarExtra` and the Settings scene
 - [x] T017 [US4] Add the onboarding window for the Accessibility permission
-- [ ] T018 [US4] Add the per-app exclusion and start at login.
-  The code exists. No test examined these two controls.
+- [x] T018 [US4] Add the per-app exclusion and start at login.
+  The end-to-end test examines the exclusion. Task T008 of feature 002 tracks the start at login.
 
 ## Phase 7: Delivery
 
