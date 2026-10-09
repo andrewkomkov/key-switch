@@ -1,4 +1,5 @@
 import Foundation
+import KeySwitchCore
 import Observation
 import ServiceManagement
 
@@ -13,6 +14,15 @@ final class Settings {
     var autoSwitch: Bool { didSet { defaults.set(autoSwitch, forKey: Key.autoSwitch) } }
     var caseGesture: Bool { didSet { defaults.set(caseGesture, forKey: Key.caseGesture) } }
     var selectionGestures: Bool { didSet { defaults.set(selectionGestures, forKey: Key.selectionGestures) } }
+    var learnWords: Bool { didSet { defaults.set(learnWords, forKey: Key.learnWords) } }
+    /// Learned words as `language:word`.
+    var learnedWords: [String] {
+        didSet {
+            defaults.set(learnedWords, forKey: Key.learnedWords)
+            learnedByLanguage = Self.byLanguage(learnedWords)
+        }
+    }
+    private(set) var learnedByLanguage: [String: Set<String>]
     var fixTypos: Bool { didSet { defaults.set(fixTypos, forKey: Key.fixTypos) } }
     var playSound: Bool { didSet { defaults.set(playSound, forKey: Key.playSound) } }
     /// Bundle identifiers of the apps where the detector is off.
@@ -49,6 +59,8 @@ final class Settings {
         static let playSound = "playSound"
         static let fixTypos = "fixTypos"
         static let caseGesture = "caseGesture"
+        static let learnWords = "learnWords"
+        static let learnedWords = "learnedWords"
         static let selectionGestures = "selectionGestures"
         static let excludedApps = "excludedApps"
         static let exceptions = "exceptions"
@@ -71,6 +83,10 @@ final class Settings {
         playSound = defaults.bool(forKey: Key.playSound)
         fixTypos = defaults.bool(forKey: Key.fixTypos)
         caseGesture = defaults.bool(forKey: Key.caseGesture)
+        learnWords = defaults.bool(forKey: Key.learnWords)
+        let learnedWords = defaults.stringArray(forKey: Key.learnedWords) ?? []
+        self.learnedWords = learnedWords
+        learnedByLanguage = Self.byLanguage(learnedWords)
         selectionGestures = defaults.bool(forKey: Key.selectionGestures)
         excludedApps = defaults.stringArray(forKey: Key.excludedApps) ?? []
         let exceptions = defaults.stringArray(forKey: Key.exceptions) ?? []
@@ -81,6 +97,24 @@ final class Settings {
     func addException(_ word: String) {
         guard !word.isEmpty, !exceptionSet.contains(word) else { return }
         exceptions.append(word)
+    }
+
+    func setLearned(_ learned: Bool, word: String, language: String) {
+        let entry = WordLearner.entry(word, language: language)
+        if learned, !learnedWords.contains(entry) {
+            learnedWords.append(entry)
+        } else if !learned {
+            learnedWords.removeAll { $0 == entry }
+        }
+    }
+
+    private static func byLanguage(_ entries: [String]) -> [String: Set<String>] {
+        var result: [String: Set<String>] = [:]
+        for entry in entries {
+            let parts = entry.split(separator: ":", maxSplits: 1)
+            if parts.count == 2 { result[String(parts[0]), default: []].insert(String(parts[1])) }
+        }
+        return result
     }
 
     func isExcluded(_ bundleID: String?) -> Bool {

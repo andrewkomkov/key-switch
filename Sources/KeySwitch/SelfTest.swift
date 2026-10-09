@@ -1,4 +1,5 @@
 import AppKit
+import KeySwitchCore
 
 /// End-to-end check of the real pipeline: posts hardware-level key events into a text view
 /// of this app and compares what arrives there. Needs the Accessibility permission.
@@ -38,6 +39,9 @@ final class SelfTest {
                      settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions)
         let savedFixTypos = settings.fixTypos, savedCaseGesture = settings.caseGesture
         let savedSelectionGestures = settings.selectionGestures
+        let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
+        settings.learnWords = false
+        settings.learnedWords = []
         let savedClipboard = Selection.snapshot()
         settings.selectionGestures = true
         settings.fixTypos = false
@@ -53,6 +57,8 @@ final class SelfTest {
         settings.fixTypos = savedFixTypos
         settings.caseGesture = savedCaseGesture
         settings.selectionGestures = savedSelectionGestures
+        settings.learnWords = savedLearnWords
+        settings.learnedWords = savedLearnedWords
         Selection.restore(savedClipboard)
         if let savedLayout { InputSources.select(savedLayout) }
         lines.append(failures == 0 ? "RESULT: PASS" : "RESULT: FAIL (\(failures))")
@@ -250,6 +256,46 @@ final class SelfTest {
         await tap(shift, .maskShift, times: 2, settle: 1.2)
         expect("selection option off: nothing changes", text: "ghbdtn", layout: russian)
         settings.selectionGestures = true
+
+        let git = keys(for: "гит", in: russian), approve = keys(for: "апрув", in: russian)
+        let gitThreeTimes = git + [space] + git + [space] + git + [space]
+        await start(in: russian)
+        await type(gitThreeTimes)
+        check("learning off: the list stays empty", settings.learnedWords.isEmpty, "\(settings.learnedWords)")
+
+        settings.learnWords = true
+        await start(in: english)
+        await type(git + [space])
+        expect("learning: an unknown short word stays before it is learned", text: "ubn ", layout: english)
+        await start(in: russian)
+        await type(gitThreeTimes)
+        expect("learning: three uses in the right layout stay as typed", text: "гит гит гит ", layout: russian)
+        check("learning: the third use puts the word in the list", settings.learnedWords == ["ru:гит"], "\(settings.learnedWords)")
+        await start(in: english)
+        await type(git + [space])
+        expect("learning: the learned word is converted from the other layout", text: "гит ", layout: russian)
+
+        settings.learnedWords = []
+        await start(in: english)
+        await type(git + [space])
+        expect("learning: a removed word is unknown again", text: "ubn ", layout: english)
+
+        await start(in: english)
+        await type(approve)
+        await doubleTapShift()
+        expect("learning: a manual conversion", text: "апрув", layout: russian)
+        check("learning: the manual conversion puts the word in the list", settings.learnedWords == ["ru:апрув"], "\(settings.learnedWords)")
+        await start(in: english)
+        await type(approve + [space])
+        expect("learning: the word is converted by itself from then on", text: "апрув ", layout: russian)
+
+        await start(in: english)
+        await type(approve)
+        await doubleTapShift()
+        await pause(0.6)
+        await doubleTapShift()
+        expect("learning: a conversion and a conversion back", text: "fghed", layout: english)
+        check("learning: the conversion back teaches nothing", settings.learnedWords == [], "\(settings.learnedWords)")
     }
 
     // MARK: - Driving
@@ -300,6 +346,13 @@ final class SelfTest {
                                           length: select ? (text as NSString).length : 0))
         InputSources.select(layout)
         await pause(0.6)
+    }
+
+    /// The keys that type the text in the layout, without Shift.
+    private func keys(for text: String, in layout: Layout) -> [CGKeyCode] {
+        text.compactMap { character in
+            (CGKeyCode(0)..<52).first { layout.text(for: [Keystroke(keyCode: $0)]) == String(character) }
+        }
     }
 
     private func type(_ keys: [CGKeyCode], shift: Bool = false) async {
