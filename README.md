@@ -37,9 +37,13 @@ cp -R build/KeySwitch.app /Applications/
 open /Applications/KeySwitch.app
 ```
 
-The script signs the app ad hoc. After each new build, macOS asks for the Accessibility
-permission again. First remove the old KeySwitch entry from the Accessibility list. Then add
-the new entry. To keep the permission, set `SIGN_IDENTITY` to a valid signing identity.
+The script signs the app ad hoc. After each new ad-hoc build, macOS asks for the
+Accessibility permission again, because the permission belongs to the hash of the binary.
+
+To keep the permission, run `./Scripts/make-signing-identity.sh` one time before the build.
+The script makes a self-signed identity in a keychain of its own. The build script then
+signs each build with this identity, and macOS identifies all builds as one app.
+As an alternative, set `SIGN_IDENTITY` to a valid signing identity.
 
 A revoked certificate is dangerous here. Gatekeeper reports an app with such a signature as
 malware and moves the app to the Trash.
