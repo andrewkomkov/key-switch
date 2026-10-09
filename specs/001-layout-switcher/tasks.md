@@ -45,7 +45,7 @@ A ticked task means that the code exists and that a test or a manual check passe
 - [x] T019 Add `README.md`, `LICENSE` and the data notice
 - [x] T020 Add the CI workflow in `.github/workflows/ci.yml`
 - [x] T021 Add release-please and the release build in `.github/workflows/release.yml`
-- [ ] T022 Create the public GitHub repository and push
+- [x] T022 Create the public GitHub repository and push
 - [ ] T023 Check the app by hand in a real text field: US1, US2 and US3 scenarios
 
 ## Dependencies
