@@ -52,4 +52,24 @@ import KeySwitchCore
         buffer.append(a, isSpace: false)
         #expect(buffer.word == [a])
     }
+
+    @Test func deleteAfterATypoCorrectionForgetsTheWord() {
+        var buffer = WordBuffer()
+        buffer.append(a, isSpace: false)
+        buffer.typoCorrected = true
+        buffer.append(space, isSpace: true)
+        #expect(buffer.typoCorrected)
+        buffer.deleteLast()
+        #expect(buffer.isEmpty)
+        #expect(!buffer.typoCorrected)
+    }
+
+    @Test func aNewWordClearsTheTypoMark() {
+        var buffer = WordBuffer()
+        buffer.append(a, isSpace: false)
+        buffer.typoCorrected = true
+        buffer.append(space, isSpace: true)
+        buffer.append(a, isSpace: false)
+        #expect(!buffer.typoCorrected)
+    }
 }
