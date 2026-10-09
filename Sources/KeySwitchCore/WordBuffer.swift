@@ -11,12 +11,15 @@ public struct Keystroke: Hashable, Sendable {
     }
 }
 
-/// The word before the caret and the spaces after it, as keystrokes.
+/// The phrase before the caret, as keystrokes. A conversion works on the span: the last
+/// word, the spaces after it, and the earlier words that the user added to it.
 public struct WordBuffer: Sendable {
-    public static let capacity = 64
+    public static let capacity = 256
 
-    public private(set) var word: [Keystroke] = []
-    public private(set) var trailingSpaces: [Keystroke] = []
+    private var keys: [Keystroke] = []
+    private var isSpace: [Bool] = []
+    /// Earlier words that are part of the span.
+    private var extraWords = 0
     /// The word was converted by the detector and the user has not touched it since.
     public var autoConverted = false
     /// The user converted the word by hand. The detector must leave it alone.
@@ -28,39 +31,105 @@ public struct WordBuffer: Sendable {
 
     public init() {}
 
-    public var isEmpty: Bool { word.isEmpty }
-    public var all: [Keystroke] { word + trailingSpaces }
+    public var isEmpty: Bool { keys.isEmpty }
+    public var word: [Keystroke] { Array(keys[wordStart..<wordEnd]) }
+    public var trailingSpaces: [Keystroke] { Array(keys[wordEnd...]) }
+    /// The span: what a conversion replaces.
+    public var all: [Keystroke] { Array(keys[spanStart(words: extraWords + 1)...]) }
 
-    public mutating func append(_ key: Keystroke, isSpace: Bool) {
-        if isSpace {
+    public mutating func append(_ key: Keystroke, isSpace space: Bool) {
+        if space {
             overflowed = false
-            if !word.isEmpty { trailingSpaces.append(key) }
+            if !keys.isEmpty { push(key, isSpace: true) }
             return
         }
-        if !trailingSpaces.isEmpty { reset() }
+        if isSpace.last == true {
+            if typoCorrected { reset() }
+            clearMarks()
+        }
         if overflowed { return }
-        if word.count == Self.capacity {
+        if keys.count == Self.capacity, !dropOldestWord() {
             reset()
             overflowed = true
             return
         }
-        word.append(key)
+        push(key, isSpace: false)
         autoConverted = false
         manuallyConverted = false
     }
 
     public mutating func deleteLast() {
         if typoCorrected { return reset() }
-        if !trailingSpaces.isEmpty {
-            trailingSpaces.removeLast()
-        } else if !word.isEmpty {
-            word.removeLast()
-            if word.isEmpty { reset() }
-        }
+        guard !keys.isEmpty else { return }
+        let start = wordStart
+        keys.removeLast()
+        isSpace.removeLast()
+        extraWords = 0
         autoConverted = false
+        // The caret is now in an earlier word: the marks were about the deleted one.
+        if keys.isEmpty || wordStart != start { clearMarks() }
+    }
+
+    /// Adds one earlier word to the span. Returns `false` if there is none.
+    public mutating func extend() -> Bool {
+        guard !typoCorrected,
+              spanStart(words: extraWords + 2) < spanStart(words: extraWords + 1)
+        else { return false }
+        extraWords += 1
+        return true
+    }
+
+    /// Puts other keys in place of the last word, for example the same keys with Shift.
+    public mutating func replaceWord(_ replacement: [Keystroke]) {
+        guard replacement.count == wordEnd - wordStart else { return }
+        keys.replaceSubrange(wordStart..<wordEnd, with: replacement)
     }
 
     public mutating func reset() {
         self = WordBuffer()
+    }
+
+    private mutating func push(_ key: Keystroke, isSpace space: Bool) {
+        keys.append(key)
+        isSpace.append(space)
+    }
+
+    /// Makes room at the front. Returns `false` if the phrase is one long word.
+    private mutating func dropOldestWord() -> Bool {
+        guard var cut = isSpace.firstIndex(of: true) else { return false }
+        while cut < keys.count, isSpace[cut] { cut += 1 }
+        keys.removeFirst(cut)
+        isSpace.removeFirst(cut)
+        return true
+    }
+
+    private mutating func clearMarks() {
+        autoConverted = false
+        manuallyConverted = false
+        typoCorrected = false
+        extraWords = 0
+    }
+
+    private var wordEnd: Int {
+        var index = keys.count
+        while index > 0, isSpace[index - 1] { index -= 1 }
+        return index
+    }
+
+    private var wordStart: Int { spanStart(words: 1) }
+
+    /// Start of the span that has up to `count` words.
+    private func spanStart(words count: Int) -> Int {
+        var index = wordEnd
+        for word in 0..<count {
+            if word > 0 {
+                var previous = index
+                while previous > 0, isSpace[previous - 1] { previous -= 1 }
+                if previous == 0 { break }
+                index = previous
+            }
+            while index > 0, !isSpace[index - 1] { index -= 1 }
+        }
+        return index
     }
 }

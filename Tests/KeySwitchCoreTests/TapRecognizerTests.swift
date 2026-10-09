@@ -1,49 +1,53 @@
 import Testing
 import KeySwitchCore
 
-@Suite struct ShiftTapRecognizerTests {
-    var recognizer = ShiftTapRecognizer()
+@Suite struct TapRecognizerTests {
+    var recognizer = TapRecognizer()
 
-    mutating func tap(at time: Double, held: Double = 0.05) -> ShiftTapRecognizer.Action {
-        _ = recognizer.flagsChanged(shiftDown: true, otherModifiers: false, time: time)
-        return recognizer.flagsChanged(shiftDown: false, otherModifiers: false, time: time + held)
+    mutating func tap(at time: Double, held: Double = 0.05) -> TapRecognizer.Action {
+        _ = recognizer.flagsChanged(isDown: true, otherModifiers: false, time: time)
+        return recognizer.flagsChanged(isDown: false, otherModifiers: false, time: time + held)
     }
 
-    @Test mutating func singleTapSwitches() {
-        #expect(tap(at: 0) == .switchLayout)
+    @Test mutating func singleTap() {
+        #expect(tap(at: 0) == .single)
     }
 
-    @Test mutating func doubleTapConverts() {
-        #expect(tap(at: 0) == .switchLayout)
-        #expect(tap(at: 0.2) == .convert)
-        #expect(tap(at: 0.4) == .switchLayout)
+    @Test mutating func aSeriesOfTaps() {
+        #expect(tap(at: 0) == .single)
+        #expect(tap(at: 0.2) == .double)
+        #expect(tap(at: 0.4) == .repeated)
+        #expect(tap(at: 0.6) == .repeated)
+        #expect(tap(at: 2) == .single)
+        #expect(tap(at: 2.2) == .double)
     }
 
-    @Test mutating func slowSecondTapSwitchesAgain() {
-        #expect(tap(at: 0) == .switchLayout)
-        #expect(tap(at: 1) == .switchLayout)
+    @Test mutating func slowSecondTapStartsANewSeries() {
+        #expect(tap(at: 0) == .single)
+        #expect(tap(at: 1) == .single)
     }
 
     @Test mutating func holdIsNotATap() {
         #expect(tap(at: 0, held: 1) == .none)
     }
 
-    @Test mutating func shiftWithAKeyIsNotATap() {
-        _ = recognizer.flagsChanged(shiftDown: true, otherModifiers: false, time: 0)
+    @Test mutating func modifierWithAKeyIsNotATap() {
+        _ = recognizer.flagsChanged(isDown: true, otherModifiers: false, time: 0)
         recognizer.interrupt()
-        #expect(recognizer.flagsChanged(shiftDown: false, otherModifiers: false, time: 0.05) == .none)
+        #expect(recognizer.flagsChanged(isDown: false, otherModifiers: false, time: 0.05) == .none)
     }
 
-    @Test mutating func keyBetweenTapsCancelsTheDoubleTap() {
-        #expect(tap(at: 0) == .switchLayout)
+    @Test mutating func keyBetweenTapsEndsTheSeries() {
+        #expect(tap(at: 0) == .single)
+        #expect(tap(at: 0.2) == .double)
         recognizer.interrupt()
-        #expect(tap(at: 0.2) == .switchLayout)
+        #expect(tap(at: 0.4) == .single)
     }
 
-    @Test mutating func shiftWithAnotherModifierIsNotATap() {
-        _ = recognizer.flagsChanged(shiftDown: true, otherModifiers: false, time: 0)
-        _ = recognizer.flagsChanged(shiftDown: true, otherModifiers: true, time: 0.01)
-        #expect(recognizer.flagsChanged(shiftDown: false, otherModifiers: true, time: 0.05) == .none)
-        #expect(recognizer.flagsChanged(shiftDown: false, otherModifiers: false, time: 0.06) == .none)
+    @Test mutating func withAnotherModifierIsNotATap() {
+        _ = recognizer.flagsChanged(isDown: true, otherModifiers: false, time: 0)
+        _ = recognizer.flagsChanged(isDown: true, otherModifiers: true, time: 0.01)
+        #expect(recognizer.flagsChanged(isDown: false, otherModifiers: true, time: 0.05) == .none)
+        #expect(recognizer.flagsChanged(isDown: false, otherModifiers: false, time: 0.06) == .none)
     }
 }
