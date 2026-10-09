@@ -21,5 +21,11 @@ sed "s/__VERSION__/$version/g" Resources/Info.plist > "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns Resources/ru.txt Resources/en.txt Resources/en-tech.txt "$app/Contents/Resources/"
 cp -R Resources/en.lproj Resources/ru.lproj "$app/Contents/Resources/"
 
-codesign --force --options runtime --sign "${SIGN_IDENTITY:--}" "$app"
+local_keychain="$HOME/Library/Keychains/keyswitch-signing.keychain-db"
+if [[ -z "${SIGN_IDENTITY:-}" && -f "$local_keychain" ]]; then
+    security unlock-keychain -p keyswitch "$local_keychain"
+    codesign --force --options runtime --keychain "$local_keychain" --sign "KeySwitch Local Signing" "$app"
+else
+    codesign --force --options runtime --sign "${SIGN_IDENTITY:--}" "$app"
+fi
 echo "Built $app ($version)"
