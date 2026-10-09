@@ -74,11 +74,29 @@ One decision takes about 15 microseconds in a debug build.
 The file `specs/001-layout-switcher/plan.md` compares this method with three alternatives:
 a dictionary only, the system spelling checker, and a neural network.
 
+## Typo correction
+
+This option is off by default. Set "Fix typos" to on in the settings.
+
+When you complete a word, KeySwitch asks the macOS spelling checker for a sure correction:
+`recieve` becomes `receive`, and `севодня` becomes `сегодня`. KeySwitch accepts the
+correction only when it is a frequent word and is 1 or 2 edits from the typed word.
+
+KeySwitch keeps these words as typed:
+
+- a word with a digit
+- a word of fewer than 3 letters
+- a word with a capital letter after the first letter
+- a technical term such as `kubectl`
+
+Tap Shift two times to get the typed word back. The word then becomes an exception.
+
 ## Privacy
 
 - KeySwitch keeps the keys of the current word in memory. It deletes them when the caret moves.
 - The keys stay out of the disk and out of the log.
 - KeySwitch makes no network connections.
+- With typo correction on, a rare word goes to the spelling checker of macOS on this Mac.
 - macOS hides the keys of password fields from KeySwitch.
 
 ## Development
