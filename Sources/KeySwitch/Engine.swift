@@ -28,6 +28,7 @@ final class Engine {
     @ObservationIgnored private var shiftTaps = TapRecognizer()
     @ObservationIgnored private var optionTaps = TapRecognizer()
     @ObservationIgnored private var detector: Detector?
+    @ObservationIgnored private var learner = WordLearner()
     @ObservationIgnored private var layouts: [Layout] = []
     /// What the word looked like before the detector converted it.
     @ObservationIgnored private var autoConvertedFrom = ""
@@ -211,6 +212,8 @@ final class Engine {
             }
             // The first tap already selected the target layout, unless that gesture is off.
             if !settings.shiftSwitches { selectNextLayout() }
+            detector?.learned = settings.learnedByLanguage
+            learnFromManualConversion()
             convertManually()
         case .repeated:
             if settings.doubleShiftConverts, buffer.extend() { convertManually() }
@@ -244,14 +247,18 @@ final class Engine {
         if keyCode == KeyCode.backspace {
             buffer.deleteLast()
         } else if keyCode == KeyCode.space {
+            detector?.learned = settings.learnedByLanguage
             if convertAutomatically() || correctTypo() {
                 Typist.press(keyCode)
                 buffer.append(key, isSpace: true)
                 return false
             }
+            countTypedWord()
             buffer.append(key, isSpace: true)
         } else if KeyCode.returnKeys.contains(keyCode) {
+            detector?.learned = settings.learnedByLanguage
             let converted = convertAutomatically() || correctTypo()
+            if !converted { countTypedWord() }
             buffer.reset()
             if converted {
                 Typist.press(keyCode, flags: flags.intersection(.maskShift))
@@ -354,6 +361,43 @@ final class Engine {
         buffer.manuallyConverted = true
     }
 
+    /// Counts a finished word that stays as typed. The third use makes it a learned word.
+    private func countTypedWord() {
+        guard settings.learnWords, let detector,
+              !buffer.isEmpty, buffer.trailingSpaces.isEmpty, !buffer.autoConverted, !buffer.typoCorrected,
+              !settings.isExcluded(focusedBundleID),
+              let layout = InputSources.current(), let other = otherLayout(than: layout)
+        else { return }
+        let word = Detector.core(of: layout.text(for: buffer.word))
+        let learnable = detector.isLearnable(
+            word, language: layout.language,
+            other: other.text(for: buffer.word), otherLanguage: other.language)
+        if learnable, learner.observe(word, language: layout.language) {
+            settings.setLearned(true, word: word, language: layout.language)
+        }
+    }
+
+    /// The user converts the word by hand: the new reading is what they want, the old one is not.
+    private func learnFromManualConversion() {
+        guard settings.learnWords, let detector, !buffer.isEmpty,
+              !settings.isExcluded(focusedBundleID),
+              let target = InputSources.current(), let source = layoutBeforeTap, source != target
+        else { return }
+        let old = source.text(for: buffer.word)
+        let new = Detector.core(of: target.text(for: buffer.word))
+        // Asked before the old reading is forgotten: a conversion back must not teach it.
+        let learnable = detector.isLearnable(
+            new, language: target.language, other: old, otherLanguage: source.language, confirmed: true)
+        learner.forget(Detector.core(of: old), language: source.language)
+        settings.setLearned(false, word: Detector.core(of: old), language: source.language)
+        if learnable { settings.setLearned(true, word: new, language: target.language) }
+    }
+
+    /// The first enabled layout of another language that has a model.
+    private func otherLayout(than layout: Layout) -> Layout? {
+        layouts.first { $0.language != layout.language && detector?.supports($0.language) == true }
+    }
+
     /// Gives the last word its next letter case.
     private func changeCase() {
         guard !buffer.isEmpty, !buffer.typoCorrected, let layout = InputSources.current() else { return }
@@ -382,7 +426,7 @@ final class Engine {
               !buffer.autoConverted, !buffer.manuallyConverted,
               !settings.isExcluded(focusedBundleID),
               let current = InputSources.current(), detector.supports(current.language),
-              let other = layouts.first(where: { $0.language != current.language && detector.supports($0.language) })
+              let other = otherLayout(than: current)
         else { return false }
 
         let keys = buffer.word

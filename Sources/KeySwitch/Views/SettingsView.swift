@@ -9,10 +9,11 @@ struct SettingsView: View {
             Tab("General", systemImage: "gearshape") { GeneralSettings(settings: settings, engine: engine) }
             Tab("Apps", systemImage: "app.badge.checkmark") { AppSettings(settings: settings) }
             Tab("Exceptions", systemImage: "text.badge.xmark") { ExceptionSettings(settings: settings) }
+            Tab("Learned", systemImage: "graduationcap") { LearnedSettings(settings: settings) }
             Tab("About", systemImage: "info.circle") { AboutView() }
         }
         .scenePadding()
-        .frame(width: 480, height: 600)
+        .frame(width: 520, height: 680)
     }
 }
 
@@ -47,6 +48,11 @@ private struct GeneralSettings: View {
                 Text("When you finish a word with Space or Return, KeySwitch checks it against a dictionary and a letter model. Double-tap Shift to undo: the word becomes an exception.")
             }
             Section {
+                Toggle("Learn the words that I type often", isOn: $settings.learnWords)
+            } footer: {
+                Text("A word that you type three times, or convert by hand, goes to the Learned list and counts as a dictionary word. The list is stored on this Mac.")
+            }
+            Section {
                 Toggle("Fix typos", isOn: $settings.fixTypos)
             } header: {
                 Text("Spelling")
@@ -74,6 +80,21 @@ private struct AppSettings: View {
             },
             empty: "No excluded apps",
             hint: "Automatic switching is off in these apps. Add an app from the menu bar while it is in front.")
+    }
+}
+
+private struct LearnedSettings: View {
+    @Bindable var settings: Settings
+
+    var body: some View {
+        RemovableList(
+            items: $settings.learnedWords,
+            title: { entry in
+                let parts = entry.split(separator: ":", maxSplits: 1)
+                return parts.count == 2 ? "\(parts[1]) (\(parts[0].uppercased()))" : entry
+            },
+            empty: "No learned words",
+            hint: "KeySwitch treats these words as dictionary words. Remove a word that got here by mistake.")
     }
 }
 
