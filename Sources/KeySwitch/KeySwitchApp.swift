@@ -10,7 +10,7 @@ struct KeySwitchApp: App {
         MenuBarExtra {
             MenuView(settings: settings, engine: engine, showOnboarding: delegate.showOnboarding)
         } label: {
-            Image(systemName: settings.isEnabled && engine.isTrusted ? "keyboard.fill" : "keyboard")
+            Image(systemName: settings.isEnabled && engine.isTrusted ? "shift.fill" : "shift")
         }
 
         SwiftUI.Settings {
@@ -38,6 +38,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let window = NSWindow(contentViewController: NSHostingController(
                 rootView: OnboardingView(engine: .shared) { [weak self] in self?.onboarding?.close() }))
             window.styleMask = [.titled, .closable, .fullSizeContentView]
+            window.title = "KeySwitch"
+            window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.isReleasedWhenClosed = false
             window.center()
