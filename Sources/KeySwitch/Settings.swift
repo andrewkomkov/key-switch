@@ -11,6 +11,7 @@ final class Settings {
     var shiftSwitches: Bool { didSet { defaults.set(shiftSwitches, forKey: Key.shiftSwitches) } }
     var doubleShiftConverts: Bool { didSet { defaults.set(doubleShiftConverts, forKey: Key.doubleShiftConverts) } }
     var autoSwitch: Bool { didSet { defaults.set(autoSwitch, forKey: Key.autoSwitch) } }
+    var fixTypos: Bool { didSet { defaults.set(fixTypos, forKey: Key.fixTypos) } }
     var playSound: Bool { didSet { defaults.set(playSound, forKey: Key.playSound) } }
     /// Bundle identifiers of the apps where the detector is off.
     var excludedApps: [String] { didSet { defaults.set(excludedApps, forKey: Key.excludedApps) } }
@@ -44,6 +45,7 @@ final class Settings {
         static let doubleShiftConverts = "doubleShiftConverts"
         static let autoSwitch = "autoSwitch"
         static let playSound = "playSound"
+        static let fixTypos = "fixTypos"
         static let excludedApps = "excludedApps"
         static let exceptions = "exceptions"
     }
@@ -61,6 +63,7 @@ final class Settings {
         doubleShiftConverts = defaults.bool(forKey: Key.doubleShiftConverts)
         autoSwitch = defaults.bool(forKey: Key.autoSwitch)
         playSound = defaults.bool(forKey: Key.playSound)
+        fixTypos = defaults.bool(forKey: Key.fixTypos)
         excludedApps = defaults.stringArray(forKey: Key.excludedApps) ?? []
         let exceptions = defaults.stringArray(forKey: Key.exceptions) ?? []
         self.exceptions = exceptions
