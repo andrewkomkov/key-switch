@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/andrewkomkov/key-switch/compare/v0.1.0...v0.2.0) (2026-10-09)
+
+
+### Features
+
+* add typo policy with tests against the system spelling checker ([4415e0b](https://github.com/andrewkomkov/key-switch/commit/4415e0b69ae1f0befa8f4bdac8c8e2be24a53eef))
+* fix typos with the macos spelling checker ([7d25b2a](https://github.com/andrewkomkov/key-switch/commit/7d25b2ae85a86812380ab0e2faf2312c83cbaaff))
+
 ## 0.1.0 (2026-10-09)
 
 
