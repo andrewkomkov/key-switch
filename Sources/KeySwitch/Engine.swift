@@ -71,6 +71,12 @@ final class Engine {
         _ = AXIsProcessTrustedWithOptions(options)
     }
 
+    /// Forgets the current word and a Shift tap in progress.
+    func resetInputState() {
+        buffer.reset()
+        recognizer.interrupt()
+    }
+
     // MARK: - Setup
 
     private nonisolated static func loadDetector() -> Detector? {

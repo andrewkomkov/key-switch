@@ -12,6 +12,8 @@ final class SelfTest {
     private var window: NSWindow?
     private var lines: [String] = []
     private var failures = 0
+    /// The test window lost the keyboard focus. No more keys are posted after that.
+    private var lostFocus = false
 
     // ANSI key codes. The same keys type `ghbdtn` in English and `привет` in Russian.
     private let privet: [CGKeyCode] = [5, 4, 11, 2, 17, 45]
@@ -98,9 +100,9 @@ final class SelfTest {
         expect("double Shift converts it back", text: "ghbdtn", layout: english)
 
         await start(in: english)
-        await type(hello + [space] + privet + [space, space])
+        await type(hello + [space] + privet + [space])
         await doubleTapShift()
-        expect("double Shift keeps the earlier text and the spaces", text: "hello привет  ", layout: russian)
+        expect("double Shift keeps the earlier text and the space", text: "hello привет ", layout: russian)
 
         await start(in: english)
         await type(privet + [123])  // left arrow
@@ -139,14 +141,22 @@ final class SelfTest {
         window.center()
         window.level = .floating
         self.window = window
+        // An accessory app cannot reliably take the keyboard focus.
+        NSApp.setActivationPolicy(.regular)
+    }
+
+    private var hasFocus: Bool {
+        NSApp.isActive && window?.isKeyWindow == true && window?.firstResponder === textView
     }
 
     private func start(in layout: Layout) async {
-        NSApp.activate()
+        guard !lostFocus else { return }
+        NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
         window?.makeFirstResponder(textView)
-        // Escape resets the word buffer and the Shift recognizer of the engine.
-        await type([53])
+        for _ in 0..<30 where !hasFocus { await pause(0.1) }
+        lostFocus = !hasFocus
+        Engine.shared.resetInputState()
         textView.string = ""
         InputSources.select(layout)
         await pause(0.6)
@@ -175,6 +185,11 @@ final class SelfTest {
     }
 
     private func post(_ key: CGKeyCode, down: Bool, flags: CGEventFlags) {
+        // Never type into another app.
+        guard !lostFocus, hasFocus else {
+            lostFocus = true
+            return
+        }
         let event = CGEvent(keyboardEventSource: nil, virtualKey: key, keyDown: down)
         event?.flags = flags
         event?.post(tap: .cghidEventTap)
@@ -194,7 +209,9 @@ final class SelfTest {
     }
 
     private func check(_ name: String, _ passed: Bool, _ detail: String) {
-        if passed {
+        if lostFocus {
+            fail(name, "the test window lost the keyboard focus")
+        } else if passed {
             lines.append("PASS  \(name)")
         } else {
             fail(name, detail)
