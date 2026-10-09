@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/andrewkomkov/key-switch/compare/v0.2.0...v0.3.0) (2026-10-09)
+
+
+### Features
+
+* add layout converter for whole texts ([027675a](https://github.com/andrewkomkov/key-switch/commit/027675a893295d9d8acdd553942d541a1026f769))
+* add word learner and learned words in the detector ([7249778](https://github.com/andrewkomkov/key-switch/commit/72497781cd6d258b23ec7c8f1954f9101a3e9bed))
+* apply the shift and option gestures to the selected text ([918513b](https://github.com/andrewkomkov/key-switch/commit/918513bb6d6996fd11c86a8fa866ee3801b3f09e))
+* convert more words with more shift taps and change case with double option ([28ca41f](https://github.com/andrewkomkov/key-switch/commit/28ca41fc0866d4c11d14a760d58370f9b92abd2c))
+* convert more words with more shift taps and change case with double option ([25af270](https://github.com/andrewkomkov/key-switch/commit/25af270ba93a09ca2bec6b547b49ac8d4b2499f4))
+* keep the phrase in the buffer and recognize tap series ([5155597](https://github.com/andrewkomkov/key-switch/commit/51555971f05bca511245177c5670d7257a6e89de))
+* learn the words that the user types often or converts by hand ([ac97a9b](https://github.com/andrewkomkov/key-switch/commit/ac97a9b2aea6d69b59ddd52e08252110a6b835ad))
+* learn the words that the user types often or converts by hand ([4bcd403](https://github.com/andrewkomkov/key-switch/commit/4bcd40334682a42ee0545accdbbc451eec563c34))
+* selection gestures and learned words ([9771606](https://github.com/andrewkomkov/key-switch/commit/97716061987135fe43c395872690b2d48410e065))
+
 ## [0.2.0](https://github.com/andrewkomkov/key-switch/compare/v0.1.0...v0.2.0) (2026-10-09)
 
 
