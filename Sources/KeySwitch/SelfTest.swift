@@ -114,6 +114,12 @@ final class SelfTest {
         expect("auto-switch off: nothing changes", text: "ghbdtn ", layout: english)
         settings.autoSwitch = true
 
+        settings.excludedApps = [Bundle.main.bundleIdentifier ?? ""]
+        await start(in: english)
+        await type(privet + [space])
+        expect("excluded app: nothing changes", text: "ghbdtn ", layout: english)
+        settings.excludedApps = []
+
         await start(in: english)
         await type(privet + [space])
         await doubleTapShift()
