@@ -12,7 +12,7 @@ struct SettingsView: View {
             Tab("About", systemImage: "info.circle") { AboutView() }
         }
         .scenePadding()
-        .frame(width: 480, height: 520)
+        .frame(width: 480, height: 600)
     }
 }
 
@@ -29,9 +29,14 @@ private struct GeneralSettings: View {
                     Text(error).font(.footnote).foregroundStyle(.red)
                 }
             }
-            Section("Shift") {
+            Section {
                 Toggle("Tap Shift to switch the layout", isOn: $settings.shiftSwitches)
                 Toggle("Double-tap Shift to retype the last word", isOn: $settings.doubleShiftConverts)
+                Toggle("Double-tap Option to change the case", isOn: $settings.caseGesture)
+            } header: {
+                Text("Gestures")
+            } footer: {
+                Text("Each more Shift tap in a row takes one more word to the left. Each more Option tap gives the next case: hello, Hello, HELLO.")
             }
             Section {
                 Toggle("Switch the layout automatically", isOn: $settings.autoSwitch)

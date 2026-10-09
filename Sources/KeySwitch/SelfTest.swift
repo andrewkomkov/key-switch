@@ -25,6 +25,9 @@ final class SelfTest {
     private let space: CGKeyCode = 49
     private let returnKey: CGKeyCode = 36
     private let shift: CGKeyCode = 56
+    private let option: CGKeyCode = 58
+    // `vbh` in English, `мир` in Russian.
+    private let mir: [CGKeyCode] = [9, 11, 4]
 
     init(reportPath: String?) {
         self.reportPath = reportPath
@@ -33,8 +36,9 @@ final class SelfTest {
     func run() async {
         let saved = (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts,
                      settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions)
-        let savedFixTypos = settings.fixTypos
+        let savedFixTypos = settings.fixTypos, savedCaseGesture = settings.caseGesture
         settings.fixTypos = false
+        settings.caseGesture = true
         let savedLayout = InputSources.current()
         (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts) = (true, true, true)
         (settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions) = (true, false, [], [])
@@ -44,6 +48,7 @@ final class SelfTest {
         (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts,
          settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions) = saved
         settings.fixTypos = savedFixTypos
+        settings.caseGesture = savedCaseGesture
         if let savedLayout { InputSources.select(savedLayout) }
         lines.append(failures == 0 ? "RESULT: PASS" : "RESULT: FAIL (\(failures))")
         let report = lines.joined(separator: "\n") + "\n"
@@ -163,6 +168,46 @@ final class SelfTest {
         await start(in: english)
         await type(hello + [space] + privet + [space])
         expect("typo option on: the layout correction still works", text: "hello привет ", layout: russian)
+
+        settings.fixTypos = false
+        settings.autoSwitch = false
+        await start(in: english)
+        await type(privet + [space] + mir + [space])
+        await tap(shift, .maskShift, times: 3)
+        expect("phrase: three Shift taps convert two words", text: "привет мир ", layout: russian)
+        await pause(0.6)
+        await tap(shift, .maskShift, times: 2)
+        expect("phrase: double Shift converts both words back", text: "ghbdtn vbh ", layout: english)
+
+        await start(in: english)
+        await type(privet)
+        await tap(shift, .maskShift, times: 4)
+        expect("phrase: more taps than words change nothing more", text: "привет", layout: russian)
+
+        await start(in: english)
+        await type(hello)
+        await tap(option, .maskAlternate, times: 2)
+        expect("case: double Option capitalizes the word", text: "Hello", layout: english)
+        await pause(0.6)
+        await tap(option, .maskAlternate, times: 3)
+        expect("case: each later tap goes on in the cycle", text: "hello", layout: english)
+
+        await start(in: english)
+        await type([4])
+        await type([14, 37, 37, 31], shift: true)
+        await tap(option, .maskAlternate, times: 2)
+        expect("case: a Caps Lock mistake gets inverted", text: "Hello", layout: english)
+        await pause(0.6)
+        await tap(shift, .maskShift, times: 2)
+        expect("case: a layout conversion keeps the new case", text: "Руддщ", layout: russian)
+
+        settings.caseGesture = false
+        await start(in: english)
+        await type(hello)
+        await tap(option, .maskAlternate, times: 2)
+        expect("case option off: nothing changes", text: "hello", layout: english)
+        settings.caseGesture = true
+        settings.autoSwitch = true
     }
 
     // MARK: - Driving
@@ -213,16 +258,22 @@ final class SelfTest {
     }
 
     private func tapShift() async {
-        post(shift, down: true, flags: .maskShift)
-        await pause(0.05)
-        post(shift, down: false, flags: [])
-        await pause(0.1)
+        await tap(shift, .maskShift, times: 1, settle: 0.1)
     }
 
     private func doubleTapShift() async {
-        await tapShift()
-        await tapShift()
-        await pause(0.4)
+        await tap(shift, .maskShift, times: 2)
+    }
+
+    /// Taps a modifier key in one series.
+    private func tap(_ key: CGKeyCode, _ flag: CGEventFlags, times: Int, settle: Double = 0.4) async {
+        for index in 0..<times {
+            if index > 0 { await pause(0.1) }
+            post(key, down: true, flags: flag)
+            await pause(0.05)
+            post(key, down: false, flags: [])
+        }
+        await pause(settle)
     }
 
     private func post(_ key: CGKeyCode, down: Bool, flags: CGEventFlags) {

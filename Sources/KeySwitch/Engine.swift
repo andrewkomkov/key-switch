@@ -25,7 +25,8 @@ final class Engine {
     @ObservationIgnored private var tap: CFMachPort?
     @ObservationIgnored private var runLoopSource: CFRunLoopSource?
     @ObservationIgnored private var buffer = WordBuffer()
-    @ObservationIgnored private var recognizer = ShiftTapRecognizer()
+    @ObservationIgnored private var shiftTaps = TapRecognizer()
+    @ObservationIgnored private var optionTaps = TapRecognizer()
     @ObservationIgnored private var detector: Detector?
     @ObservationIgnored private var layouts: [Layout] = []
     /// What the word looked like before the detector converted it.
@@ -81,10 +82,15 @@ final class Engine {
         _ = AXIsProcessTrustedWithOptions(options)
     }
 
-    /// Forgets the current word and a Shift tap in progress.
+    /// Forgets the current phrase and a tap in progress.
     func resetInputState() {
         buffer.reset()
-        recognizer.interrupt()
+        interruptTaps()
+    }
+
+    private func interruptTaps() {
+        shiftTaps.interrupt()
+        optionTaps.interrupt()
     }
 
     // MARK: - Setup
@@ -148,7 +154,7 @@ final class Engine {
 
     private func applicationActivated(_ app: NSRunningApplication?) {
         buffer.reset()
-        recognizer.interrupt()
+        interruptTaps()
         focusedBundleID = app?.bundleIdentifier
         if let app, app.processIdentifier != ProcessInfo.processInfo.processIdentifier {
             frontApp = app
@@ -172,24 +178,24 @@ final class Engine {
             return keyDown(event)
         default:
             buffer.reset()
-            recognizer.interrupt()
+            interruptTaps()
             return true
         }
     }
 
     private func flagsChanged(_ event: CGEvent) {
         let flags = event.flags
-        let action = recognizer.flagsChanged(
-            shiftDown: flags.contains(.maskShift),
-            otherModifiers: !flags.isDisjoint(with: [.maskCommand, .maskControl, .maskAlternate, .maskSecondaryFn]),
-            time: ProcessInfo.processInfo.systemUptime)
-        switch action {
+        let time = ProcessInfo.processInfo.systemUptime
+        let shift = flags.contains(.maskShift), option = flags.contains(.maskAlternate)
+        let others = !flags.isDisjoint(with: [.maskCommand, .maskControl, .maskSecondaryFn])
+
+        switch shiftTaps.flagsChanged(isDown: shift, otherModifiers: others || option, time: time) {
         case .none:
             break
-        case .switchLayout:
+        case .single:
             layoutBeforeTap = InputSources.current()
             if settings.shiftSwitches { selectNextLayout() }
-        case .convert:
+        case .double:
             guard settings.doubleShiftConverts else { break }
             if buffer.typoCorrected {
                 revertTypo()
@@ -198,11 +204,20 @@ final class Engine {
             // The first tap already selected the target layout, unless that gesture is off.
             if !settings.shiftSwitches { selectNextLayout() }
             convertManually()
+        case .repeated:
+            if settings.doubleShiftConverts, buffer.extend() { convertManually() }
+        }
+
+        switch optionTaps.flagsChanged(isDown: option, otherModifiers: others || shift, time: time) {
+        case .none, .single:
+            break
+        case .double, .repeated:
+            if settings.caseGesture { changeCase() }
         }
     }
 
     private func keyDown(_ event: CGEvent) -> Bool {
-        recognizer.interrupt()
+        interruptTaps()
         let flags = event.flags
         let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
         guard flags.isDisjoint(with: [.maskCommand, .maskControl, .maskAlternate]) else {
@@ -259,6 +274,27 @@ final class Engine {
             settings.addException(autoConvertedFrom)
             buffer.autoConverted = false
         }
+        buffer.manuallyConverted = true
+    }
+
+    /// Gives the last word its next letter case.
+    private func changeCase() {
+        guard !buffer.isEmpty, !buffer.typoCorrected, let layout = InputSources.current() else { return }
+        let keys = buffer.word
+        let text = layout.text(for: keys)
+        let changed = CaseCycler.next(text)
+        guard text.count == keys.count, changed.count == keys.count, changed != text else { return }
+
+        // The same keys with or without Shift, so that the buffer stays true to the screen.
+        var replacement: [Keystroke] = []
+        for (key, character) in zip(keys, changed) {
+            let variants = [false, true].map { Keystroke(keyCode: key.keyCode, shift: $0) }
+            guard let match = variants.first(where: { layout.text(for: [$0]) == String(character) }) else { return }
+            replacement.append(match)
+        }
+        let spaces = String(repeating: " ", count: buffer.trailingSpaces.count)
+        replace(count: keys.count + spaces.count, with: changed + spaces)
+        buffer.replaceWord(replacement)
         buffer.manuallyConverted = true
     }
 
