@@ -68,6 +68,7 @@ import KeySwitchCore
 }
 
 /// Checks the rules against the real macOS spelling checker.
+/// Its dictionary changes with the macOS version: keep here only the words that all versions agree on.
 @MainActor
 @Suite(.enabled(if: NSSpellChecker.shared.availableLanguages.contains("en")
                   && NSSpellChecker.shared.availableLanguages.contains("ru")))
@@ -92,7 +93,7 @@ struct SystemSpellCheckerTests {
         #expect(corrected(typed, language: "en") == expected)
     }
 
-    @Test(arguments: [("севодня", "сегодня"), ("агенство", "агентство"), ("здраствуйте", "здравствуйте"), ("сдесь", "здесь"), ("зделать", "сделать")])
+    @Test(arguments: [("севодня", "сегодня"), ("здраствуйте", "здравствуйте"), ("сдесь", "здесь"), ("зделать", "сделать")])
     func russianTypos(_ typed: String, _ expected: String) {
         #expect(corrected(typed, language: "ru") == expected)
     }
