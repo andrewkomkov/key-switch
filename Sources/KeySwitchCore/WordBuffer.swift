@@ -21,6 +21,9 @@ public struct WordBuffer: Sendable {
     public var autoConverted = false
     /// The user converted the word by hand. The detector must leave it alone.
     public var manuallyConverted = false
+    /// The spelling of the word was corrected. The screen no longer shows these keys,
+    /// so the only safe operations are more spaces and a revert.
+    public var typoCorrected = false
     private var overflowed = false
 
     public init() {}
@@ -47,6 +50,7 @@ public struct WordBuffer: Sendable {
     }
 
     public mutating func deleteLast() {
+        if typoCorrected { return reset() }
         if !trailingSpaces.isEmpty {
             trailingSpaces.removeLast()
         } else if !word.isEmpty {

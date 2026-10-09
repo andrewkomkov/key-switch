@@ -38,6 +38,8 @@ enum Fixtures {
         text(path).split(separator: "\n").prefix(limit).map { String($0.split(separator: " ")[0]) }
     }
 
+    static let technicalWords = Set(text("Resources/en-tech.txt").split(separator: "\n").map(String.init))
+
     static let detector = Detector(models: [
         .russian(wordList: text("Resources/ru.txt")),
         .english(wordList: text("Resources/en.txt") + text("Resources/en-tech.txt")),

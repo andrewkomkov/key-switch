@@ -203,3 +203,4 @@ ubuntu
 debian
 windows
 android
+pytest

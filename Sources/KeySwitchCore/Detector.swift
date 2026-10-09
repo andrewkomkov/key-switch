@@ -31,6 +31,11 @@ public struct Detector: Sendable {
         models[language] != nil
     }
 
+    /// Position of the word in the frequency list of the language, 0 is the most frequent.
+    public func rank(of word: String, language: String) -> Int? {
+        models[language]?.rank(of: word)
+    }
+
     /// - Parameters:
     ///   - current: the keys read in the active layout, as they appear on screen.
     ///   - other: the same keys read in the candidate layout.
