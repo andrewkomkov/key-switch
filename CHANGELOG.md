@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/andrewkomkov/key-switch/compare/v0.8.0...v0.9.0) (2026-10-12)
+
+
+### Features
+
+* add a menu item that opens the clipboard search ([#30](https://github.com/andrewkomkov/key-switch/issues/30)) ([048e8ca](https://github.com/andrewkomkov/key-switch/commit/048e8caf037b1c864e22e5f16f5e70fd23fb51f0))
+
 ## [0.8.0](https://github.com/andrewkomkov/key-switch/compare/v0.7.1...v0.8.0) (2026-10-12)
 
 
