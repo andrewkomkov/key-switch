@@ -66,6 +66,19 @@ private struct GeneralSettings: View {
                 Text("A dictionary word such as HEllo gets one capital. Typo correction uses the macOS spelling checker and replaces a word only when the correction is a frequent word. The letter ё goes only into the words that always have it: еще becomes ещё, and все stays. Double-tap Shift to undo: the word becomes an exception.")
             }
             Section {
+                Toggle("Use the text replacements of macOS in all apps", isOn: $settings.systemReplacements)
+                LabeledContent("Replacements in System Settings", value: SystemReplacements.current.count, format: .number)
+                Button("Open Keyboard Settings…") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            } header: {
+                Text("Text replacements")
+            } footer: {
+                Text("KeySwitch reads the list of System Settings, Keyboard, Text Replacements. It applies the list in the apps that ignore it, such as browsers and terminals. Double-tap Shift to undo: the shortcut becomes an exception.")
+            }
+            Section {
                 Toggle("Play a sound on conversion", isOn: $settings.playSound)
                 LabeledContent("Conversions this session", value: engine.conversions, format: .number)
             }

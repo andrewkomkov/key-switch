@@ -27,6 +27,7 @@ final class Settings {
     var fixTypos: Bool { didSet { defaults.set(fixTypos, forKey: Key.fixTypos) } }
     var yofication: Bool { didSet { defaults.set(yofication, forKey: Key.yofication) } }
     var fixCapitals: Bool { didSet { defaults.set(fixCapitals, forKey: Key.fixCapitals) } }
+    var systemReplacements: Bool { didSet { defaults.set(systemReplacements, forKey: Key.systemReplacements) } }
     var clipboardHistory: Bool { didSet { defaults.set(clipboardHistory, forKey: Key.clipboardHistory) } }
     var clipboardLimit: Int { didSet { defaults.set(clipboardLimit, forKey: Key.clipboardLimit) } }
     var playSound: Bool { didSet { defaults.set(playSound, forKey: Key.playSound) } }
@@ -65,6 +66,7 @@ final class Settings {
         static let fixTypos = "fixTypos"
         static let yofication = "yofication"
         static let fixCapitals = "fixCapitals"
+        static let systemReplacements = "systemReplacements"
         static let caseGesture = "caseGesture"
         static let learnWords = "learnWords"
         static let learnedWords = "learnedWords"
@@ -87,6 +89,7 @@ final class Settings {
             Key.selectionGestures: true,
             Key.plainPaste: true,
             Key.fixCapitals: true,
+            Key.systemReplacements: true,
             Key.clipboardLimit: ClipboardHistory.defaultLimit,
         ])
         isEnabled = defaults.bool(forKey: Key.isEnabled)
@@ -97,6 +100,7 @@ final class Settings {
         fixTypos = defaults.bool(forKey: Key.fixTypos)
         yofication = defaults.bool(forKey: Key.yofication)
         fixCapitals = defaults.bool(forKey: Key.fixCapitals)
+        systemReplacements = defaults.bool(forKey: Key.systemReplacements)
         caseGesture = defaults.bool(forKey: Key.caseGesture)
         learnWords = defaults.bool(forKey: Key.learnWords)
         let learnedWords = defaults.stringArray(forKey: Key.learnedWords) ?? []

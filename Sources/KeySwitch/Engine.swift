@@ -43,6 +43,8 @@ final class Engine {
     /// The text that the last selection gesture inserted. Any key or click forgets it.
     @ObservationIgnored private var inserted: String?
     @ObservationIgnored private var selectionBusy = false
+    /// For the self-test: a list in place of the text replacements of macOS.
+    @ObservationIgnored var replacementsOverride: TextReplacements?
     /// For the self-test: skip the Accessibility read and go through the clipboard.
     @ObservationIgnored var selectionThroughClipboardOnly = false
     /// Bundle identifier of the app that gets the keys. Can be KeySwitch.
@@ -449,7 +451,30 @@ final class Engine {
 
     /// One automatic change for the finished word. The first function that acts wins.
     private func changeFinishedWord() -> Bool {
-        convertAutomatically() || fixCapitals() || correctTypo() || yoficate()
+        expandShortcut() || convertAutomatically() || fixCapitals() || correctTypo() || yoficate()
+    }
+
+    /// Replaces a finished shortcut of the macOS text replacements with its phrase. A double
+    /// Shift tap brings the shortcut back, the same as after a typo correction.
+    private func expandShortcut() -> Bool {
+        guard settings.systemReplacements,
+              !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
+              !buffer.autoConverted, !buffer.manuallyConverted, !buffer.typoCorrected,
+              !settings.isExcluded(focusedBundleID),
+              let layout = InputSources.current()
+        else { return false }
+
+        let keys = buffer.word
+        let typed = layout.text(for: keys)
+        let replacements = replacementsOverride ?? SystemReplacements.current
+        guard typed.count == keys.count, !settings.exceptionSet.contains(Detector.core(of: typed)),
+              let shown = replacements.expansion(for: typed)
+        else { return false }
+
+        replace(count: keys.count, with: shown)
+        buffer.typoCorrected = true
+        typo = (typed, shown)
+        return true
     }
 
     /// Converts the finished word if the detector says that the layout was wrong.

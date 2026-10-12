@@ -46,6 +46,8 @@ final class SelfTest {
         settings.yofication = false
         let savedFixCapitals = settings.fixCapitals
         settings.fixCapitals = false
+        let savedSystemReplacements = settings.systemReplacements
+        settings.systemReplacements = false
         let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
         settings.learnWords = false
         settings.learnedWords = []
@@ -67,6 +69,7 @@ final class SelfTest {
         settings.plainPaste = savedPlainPaste
         settings.yofication = savedYofication
         settings.fixCapitals = savedFixCapitals
+        settings.systemReplacements = savedSystemReplacements
         (settings.clipboardHistory, settings.clipboardLimit) = (savedClipboardHistory, savedClipboardLimit)
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
@@ -372,7 +375,50 @@ final class SelfTest {
         check("learning: the conversion back teaches nothing", settings.learnedWords == [], "\(settings.learnedWords)")
 
         await capitalScenarios(english: english, russian: russian)
+        await replacementScenarios(english: english)
         await clipboardScenarios(english: english, russian: russian)
+    }
+
+    /// Text replacements, with a list of the test in place of the list of macOS.
+    private func replacementScenarios(english: Layout) async {
+        Engine.shared.replacementsOverride = TextReplacements([("vbh", "very big hello"), ("ghbdtn", "shortcut")])
+        settings.exceptions = []
+        settings.autoSwitch = false
+        await start(in: english)
+        await type(mir + [space])
+        expect("replacements option off: nothing changes", text: "vbh ", layout: english)
+
+        settings.systemReplacements = true
+        await start(in: english)
+        await type(mir + [space])
+        expect("replacements: a shortcut + Space", text: "very big hello ", layout: english)
+        await doubleTapShift()
+        expect("replacements: double Shift brings the shortcut back", text: "vbh ", layout: english)
+        check("replacements: the reverted shortcut is an exception", settings.exceptions == ["vbh"], "\(settings.exceptions)")
+        await start(in: english)
+        await type(mir + [space])
+        expect("replacements: an exception stays as typed", text: "vbh ", layout: english)
+        settings.exceptions = []
+
+        await start(in: english)
+        await type([mir[0]], shift: true, settle: 0)
+        await type(mir.dropFirst() + [returnKey])
+        expect("replacements: a capital shortcut + Return", text: "Very big hello\n", layout: english)
+        await start(in: english)
+        await type(hello + [space] + mir + [43, space])  // 43: the comma key
+        expect("replacements: a mark after the shortcut stays", text: "hello very big hello, ", layout: english)
+
+        settings.autoSwitch = true
+        await start(in: english)
+        await type(privet + [space])
+        expect("replacements: a shortcut wins over the detector", text: "shortcut ", layout: english)
+        settings.excludedApps = [Bundle.main.bundleIdentifier ?? ""]
+        await start(in: english)
+        await type(mir + [space])
+        expect("replacements: an excluded app keeps the shortcut", text: "vbh ", layout: english)
+        settings.excludedApps = []
+        settings.systemReplacements = false
+        Engine.shared.replacementsOverride = nil
     }
 
     /// Accidental capitals in a finished word.
