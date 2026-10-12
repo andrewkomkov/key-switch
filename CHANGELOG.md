@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/andrewkomkov/key-switch/compare/v0.6.0...v0.7.0) (2026-10-12)
+
+
+### Features
+
+* add installation with homebrew ([d2cf33a](https://github.com/andrewkomkov/key-switch/commit/d2cf33a96c75f903d3024fde9fb256e62c62272a))
+* add installation with homebrew ([57602d9](https://github.com/andrewkomkov/key-switch/commit/57602d984a817a06736335a77153876409a6cc60))
+
 ## [0.6.0](https://github.com/andrewkomkov/key-switch/compare/v0.5.0...v0.6.0) (2026-10-12)
 
 
