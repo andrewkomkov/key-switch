@@ -107,10 +107,15 @@ private struct ClipboardSettings: View {
                     .font(.footnote).foregroundStyle(.red)
             }
             List {
-                ForEach(clipboard.history.entries) { entry in
+                ForEach(clipboard.history.pinned + clipboard.history.recent) { entry in
                     HStack {
                         ClipboardEntryLabel(entry: entry, clipboard: clipboard)
                         Spacer()
+                        Button(entry.pinned ? LocalizedStringKey("Unpin") : "Pin", systemImage: entry.pinned ? "pin.fill" : "pin") {
+                            clipboard.togglePin(entry)
+                        }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(.borderless)
                         Button("Remove", systemImage: "minus.circle") { clipboard.remove(entry) }
                             .labelStyle(.iconOnly)
                             .buttonStyle(.borderless)
@@ -123,8 +128,10 @@ private struct ClipboardSettings: View {
                 }
             }
             .clipShape(.rect(cornerRadius: 10))
+            Text("A pinned entry stays in the menu: the limit and Clear History leave it alone. To pin an entry, click its pin here, or hold Option and click the entry in the menu.")
+                .font(.footnote).foregroundStyle(.secondary)
             Button("Clear History", action: clipboard.clear)
-                .disabled(clipboard.history.entries.isEmpty)
+                .disabled(clipboard.history.recent.isEmpty)
         }
     }
 }

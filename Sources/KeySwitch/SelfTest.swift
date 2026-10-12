@@ -507,9 +507,26 @@ final class SelfTest {
         check("clipboard: the file of a dropped image goes away",
               !FileManager.default.fileExists(atPath: imageFile.path), imageFile.lastPathComponent)
 
+        func pinnedNames() -> [String] {
+            monitor.history.pinned.map { if case .text(let text) = $0.content { text } else { "image" } }
+        }
+        if let plain = monitor.history.entries.last { monitor.togglePin(plain) }
+        await copy("delta")
+        await copy("epsilon")
+        checkHistory("pin: the limit leaves a pinned entry alone", ["epsilon", "delta", "plain"])
+        monitor.useDirectory(folder)
+        check("pin: the pin stays after a restart", pinnedNames() == ["plain"], "\(pinnedNames())")
+        await copy("plain")
+        checkHistory("pin: a second copy moves the pinned entry to the top", ["plain", "epsilon", "delta"])
+        check("pin: a second copy keeps the pin", pinnedNames() == ["plain"], "\(pinnedNames())")
+        monitor.clear()
+        checkHistory("pin: clear keeps the pinned entry", ["plain"])
+        if let plain = monitor.history.entries.first { monitor.togglePin(plain) }
+        check("pin: a second change removes the pin", pinnedNames() == [] && names() == ["plain"], "\(names())")
+
         settings.clipboardHistory = false
         await copy("delta")
-        checkHistory("clipboard option off again: nothing is added", ["gamma", "plain"])
+        checkHistory("clipboard option off again: nothing is added", ["plain"])
         monitor.clear()
         checkHistory("clipboard: clear removes all entries", [])
 

@@ -161,6 +161,14 @@ The history ignores these items:
 The entries are in `~/Library/Application Support/KeySwitch/Clipboard`. Only your user
 account can read this folder. "Clear History" deletes the entries and the image files.
 
+To keep an entry, pin it. There are two procedures:
+
+- Hold Option. Then click the entry in the menu.
+- Click the pin of the entry in the "Clipboard" tab.
+
+The menu shows the pinned entries in their own group. The limit and "Clear History" do not
+delete a pinned entry. A second Option-click removes the pin.
+
 ## Privacy
 
 - KeySwitch keeps the keys of the current word in memory. It deletes them when the caret moves.

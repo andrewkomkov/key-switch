@@ -66,8 +66,14 @@ final class ClipboardMonitor {
         save()
     }
 
+    /// Deletes the entries without a pin.
     func clear() {
         discard(history.clear())
+        save()
+    }
+
+    func togglePin(_ entry: ClipboardEntry) {
+        discard(history.setPinned(!entry.pinned, for: entry.id))
         save()
     }
 

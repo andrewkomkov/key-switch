@@ -62,3 +62,9 @@
 "Entries to keep" = "Сколько записей хранить";
 "KeySwitch keeps the text and the images that you copy in a folder on this Mac, and shows them in its menu. Password managers mark their copies, and KeySwitch ignores those. A password that you copy from another app goes into the history." = "KeySwitch хранит скопированные текст и картинки в папке на этом Mac и показывает их в своём меню. Менеджеры паролей помечают свои копии, и KeySwitch их пропускает. Пароль, скопированный из другой программы, попадёт в историю.";
 "macOS does not let KeySwitch read the clipboard. Change this in System Settings, Privacy & Security." = "macOS не даёт KeySwitch читать буфер обмена. Это меняется в Системных настройках, раздел «Конфиденциальность и безопасность».";
+"Pinned" = "Закреплённые";
+"No other entries" = "Других записей нет";
+"Option-click an entry to pin it" = "Щелчок с Option закрепляет запись";
+"Pin" = "Закрепить";
+"Unpin" = "Открепить";
+"A pinned entry stays in the menu: the limit and Clear History leave it alone. To pin an entry, click its pin here, or hold Option and click the entry in the menu." = "Закреплённая запись остаётся в меню: лимит и «Очистить историю» её не трогают. Чтобы закрепить запись, нажмите её булавку здесь или щёлкните запись в меню, удерживая Option.";
