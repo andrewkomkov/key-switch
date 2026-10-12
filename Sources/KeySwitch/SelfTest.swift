@@ -38,7 +38,8 @@ final class SelfTest {
         let saved = (settings.isEnabled, settings.shiftSwitches, settings.doubleShiftConverts,
                      settings.autoSwitch, settings.playSound, settings.excludedApps, settings.exceptions)
         let savedFixTypos = settings.fixTypos, savedCaseGesture = settings.caseGesture
-        let savedSelectionGestures = settings.selectionGestures
+        let savedSelectionGestures = settings.selectionGestures, savedPlainPaste = settings.plainPaste
+        settings.plainPaste = true
         let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
         settings.learnWords = false
         settings.learnedWords = []
@@ -57,6 +58,7 @@ final class SelfTest {
         settings.fixTypos = savedFixTypos
         settings.caseGesture = savedCaseGesture
         settings.selectionGestures = savedSelectionGestures
+        settings.plainPaste = savedPlainPaste
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
         Selection.restore(savedClipboard)
@@ -257,6 +259,31 @@ final class SelfTest {
         expect("selection option off: nothing changes", text: "ghbdtn", layout: russian)
         settings.selectionGestures = true
 
+        let bold = NSAttributedString(string: "bold", attributes: [.font: NSFont.boldSystemFont(ofSize: 40)])
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.writeObjects([bold])
+        await start(in: english)
+        await pasteCommand(shift: false)
+        check("paste: Command-V keeps the format", pastedFontSize == 40, "text \(textView.string.debugDescription), size \(pastedFontSize)")
+        await start(in: english)
+        await pasteCommand(shift: true)
+        check("paste: Command-Shift-V pastes the text only",
+              textView.string == "bold" && pastedFontSize == 24,
+              "text \(textView.string.debugDescription), size \(pastedFontSize)")
+        check("paste: the clipboard keeps the formatted text",
+              NSPasteboard.general.availableType(from: [.rtf]) != nil, "\(NSPasteboard.general.types ?? [])")
+
+        settings.plainPaste = false
+        await start(in: english)
+        await pasteCommand(shift: true)
+        expect("paste option off: the app gets the shortcut", text: "", layout: english)
+        settings.plainPaste = true
+        settings.excludedApps = [Bundle.main.bundleIdentifier ?? ""]
+        await start(in: english)
+        await pasteCommand(shift: true)
+        expect("paste: an excluded app gets the shortcut", text: "", layout: english)
+        settings.excludedApps = []
+
         let git = keys(for: "гит", in: russian), approve = keys(for: "апрув", in: russian)
         let gitThreeTimes = git + [space] + git + [space] + git + [space]
         await start(in: russian)
@@ -342,6 +369,7 @@ final class SelfTest {
         lostFocus = !hasFocus
         Engine.shared.resetInputState()
         textView.string = text
+        textView.typingAttributes = [.font: NSFont.systemFont(ofSize: 24)]
         textView.setSelectedRange(NSRange(location: select ? 0 : (text as NSString).length,
                                           length: select ? (text as NSString).length : 0))
         InputSources.select(layout)
@@ -362,6 +390,19 @@ final class SelfTest {
             await pause(0.03)
         }
         await pause(0.4)
+    }
+
+    private func pasteCommand(shift: Bool) async {
+        let flags: CGEventFlags = shift ? [.maskCommand, .maskShift] : .maskCommand
+        post(9, down: true, flags: flags)
+        post(9, down: false, flags: flags)
+        await pause(0.8)
+    }
+
+    /// Point size of the first character in the text view. 0 if the view is empty.
+    private var pastedFontSize: CGFloat {
+        guard let storage = textView.textStorage, storage.length > 0 else { return 0 }
+        return (storage.attribute(.font, at: 0, effectiveRange: nil) as? NSFont)?.pointSize ?? 0
     }
 
     private func tapShift() async {

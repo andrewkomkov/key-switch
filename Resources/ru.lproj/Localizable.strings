@@ -28,7 +28,7 @@
 "When you finish a word with Space or Return, KeySwitch checks it against a dictionary and a letter model. Double-tap Shift to undo: the word becomes an exception." = "Когда вы заканчиваете слово пробелом или Return, KeySwitch сверяет его со словарём и буквенной моделью. Двойной Shift отменяет исправление, и слово попадает в исключения.";
 "Conversions this session" = "Исправлений за сеанс";
 "No excluded apps" = "Нет исключённых программ";
-"Automatic switching is off in these apps. Add an app from the menu bar while it is in front." = "В этих программах автопереключение выключено. Программу добавляют из меню в строке меню, пока она активна.";
+"Automatic switching and ⌘⇧V are off in these apps. Add an app from the menu bar while it is in front." = "В этих программах выключены автопереключение и ⌘⇧V. Программу добавляют из меню в строке меню, пока она активна.";
 "No exceptions" = "Нет исключений";
 "KeySwitch never converts these words. A word gets here when you undo an automatic conversion." = "KeySwitch не исправляет эти слова. Слово попадает сюда, когда вы отменяете автоматическое исправление.";
 "Add a word" = "Добавить слово";
@@ -43,6 +43,7 @@
 "Gestures" = "Жесты";
 "Double-tap Option to change the case" = "Двойной Option меняет регистр";
 "Each more Shift tap in a row takes one more word to the left. Each more Option tap gives the next case: hello, Hello, HELLO." = "Каждое следующее нажатие Shift подряд захватывает ещё одно слово слева. Каждое следующее нажатие Option даёт следующий регистр: hello, Hello, HELLO.";
+"Paste without formatting with ⌘⇧V" = "Вставлять без форматирования по ⌘⇧V";
 "Apply the gestures to the selected text" = "Применять жесты к выделенному тексту";
 "Learned" = "Выученные";
 "Learn the words that I type often" = "Запоминать слова, которые я часто печатаю";

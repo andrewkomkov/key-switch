@@ -35,6 +35,7 @@ private struct GeneralSettings: View {
                 Toggle("Double-tap Shift to retype the last word", isOn: $settings.doubleShiftConverts)
                 Toggle("Double-tap Option to change the case", isOn: $settings.caseGesture)
                 Toggle("Apply the gestures to the selected text", isOn: $settings.selectionGestures)
+                Toggle("Paste without formatting with ⌘⇧V", isOn: $settings.plainPaste)
             } header: {
                 Text("Gestures")
             } footer: {
@@ -79,7 +80,7 @@ private struct AppSettings: View {
                     .map { FileManager.default.displayName(atPath: $0.path) } ?? bundleID
             },
             empty: "No excluded apps",
-            hint: "Automatic switching is off in these apps. Add an app from the menu bar while it is in front.")
+            hint: "Automatic switching and ⌘⇧V are off in these apps. Add an app from the menu bar while it is in front.")
     }
 }
 
