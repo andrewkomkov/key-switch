@@ -58,6 +58,7 @@ private struct GeneralSettings: View {
             }
             Section {
                 Toggle("Fix accidental capitals", isOn: $settings.fixCapitals)
+                Toggle("Capitalize the first word of a sentence", isOn: $settings.capitalizeSentences)
                 Toggle("Fix typos", isOn: $settings.fixTypos)
                 Toggle("Put the letter ё back", isOn: $settings.yofication)
             } header: {

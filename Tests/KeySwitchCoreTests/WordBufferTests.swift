@@ -16,6 +16,22 @@ import KeySwitchCore
         #expect(buffer.all.count == 3)
     }
 
+    @Test func givesTheWordBeforeTheLastOne() {
+        var buffer = WordBuffer()
+        #expect(buffer.previousWord.isEmpty)
+        buffer.append(a, isSpace: false)
+        #expect(buffer.previousWord.isEmpty)
+        buffer.append(space, isSpace: true)
+        buffer.append(space, isSpace: true)
+        #expect(buffer.previousWord.isEmpty)
+        buffer.append(Keystroke(keyCode: 1), isSpace: false)
+        buffer.append(Keystroke(keyCode: 2), isSpace: false)
+        #expect(buffer.previousWord.map(\.keyCode) == [0])
+        buffer.append(space, isSpace: true)
+        buffer.append(Keystroke(keyCode: 3), isSpace: false)
+        #expect(buffer.previousWord.map(\.keyCode) == [1, 2])
+    }
+
     @Test func leadingSpacesAreIgnored() {
         var buffer = WordBuffer()
         buffer.append(space, isSpace: true)

@@ -26,6 +26,7 @@ final class Settings {
     private(set) var learnedByLanguage: [String: Set<String>]
     var fixTypos: Bool { didSet { defaults.set(fixTypos, forKey: Key.fixTypos) } }
     var yofication: Bool { didSet { defaults.set(yofication, forKey: Key.yofication) } }
+    var capitalizeSentences: Bool { didSet { defaults.set(capitalizeSentences, forKey: Key.capitalizeSentences) } }
     var fixCapitals: Bool { didSet { defaults.set(fixCapitals, forKey: Key.fixCapitals) } }
     var systemReplacements: Bool { didSet { defaults.set(systemReplacements, forKey: Key.systemReplacements) } }
     var emojiCodes: Bool { didSet { defaults.set(emojiCodes, forKey: Key.emojiCodes) } }
@@ -68,6 +69,7 @@ final class Settings {
         static let fixTypos = "fixTypos"
         static let yofication = "yofication"
         static let fixCapitals = "fixCapitals"
+        static let capitalizeSentences = "capitalizeSentences"
         static let systemReplacements = "systemReplacements"
         static let emojiCodes = "emojiCodes"
         static let caseGesture = "caseGesture"
@@ -106,6 +108,7 @@ final class Settings {
         fixTypos = defaults.bool(forKey: Key.fixTypos)
         yofication = defaults.bool(forKey: Key.yofication)
         fixCapitals = defaults.bool(forKey: Key.fixCapitals)
+        capitalizeSentences = defaults.bool(forKey: Key.capitalizeSentences)
         systemReplacements = defaults.bool(forKey: Key.systemReplacements)
         emojiCodes = defaults.bool(forKey: Key.emojiCodes)
         caseGesture = defaults.bool(forKey: Key.caseGesture)
