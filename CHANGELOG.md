@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/andrewkomkov/key-switch/compare/v0.4.0...v0.5.0) (2026-10-12)
+
+
+### Features
+
+* add a clipboard history to the menu ([602f0fb](https://github.com/andrewkomkov/key-switch/commit/602f0fb4f5a312cdfaa5aa464bb2459ad5b04576))
+* add a clipboard history to the menu ([300f145](https://github.com/andrewkomkov/key-switch/commit/300f145ece2270ae066cdfd2791a636b0a93517e))
+
 ## [0.4.0](https://github.com/andrewkomkov/key-switch/compare/v0.3.0...v0.4.0) (2026-10-12)
 
 
