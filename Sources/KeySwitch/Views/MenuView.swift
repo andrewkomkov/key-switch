@@ -37,16 +37,25 @@ struct MenuView: View {
     }
 }
 
-/// The clipboard history: the newest entries, then the others in a submenu.
+/// The clipboard history: the pinned entries, the newest entries, then the others in a submenu.
 private struct ClipboardMenu: View {
     let clipboard: ClipboardMonitor
     private static let visible = 15
 
     var body: some View {
-        let entries = clipboard.history.entries
+        let pinned = clipboard.history.pinned, entries = clipboard.history.recent
+        if !pinned.isEmpty {
+            Section("Pinned") {
+                ForEach(pinned) { entry in
+                    ClipboardEntryLabel(entry: entry, clipboard: clipboard, asButton: true)
+                }
+            }
+        }
         Section("Clipboard") {
             if entries.isEmpty {
-                Text("Nothing copied yet")
+                Text(pinned.isEmpty ? LocalizedStringKey("Nothing copied yet") : "No other entries")
+            } else if pinned.isEmpty {
+                Text("Option-click an entry to pin it")
             }
             ForEach(entries.prefix(Self.visible)) { entry in
                 ClipboardEntryLabel(entry: entry, clipboard: clipboard, asButton: true)
@@ -73,7 +82,14 @@ struct ClipboardEntryLabel: View {
 
     var body: some View {
         if asButton {
-            Button { clipboard.select(entry) } label: { label }
+            Button {
+                // A menu item has one action, so Option makes the second one.
+                if NSEvent.modifierFlags.contains(.option) {
+                    clipboard.togglePin(entry)
+                } else {
+                    clipboard.select(entry)
+                }
+            } label: { label }
         } else {
             label
         }

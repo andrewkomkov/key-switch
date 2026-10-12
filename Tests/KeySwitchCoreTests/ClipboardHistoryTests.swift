@@ -91,6 +91,60 @@ import KeySwitchCore
         #expect(ClipboardHistory(entries: decoded, limit: 1).entries == [entries[0]])
     }
 
+    @Test func aPinnedEntryStaysAtTheLimit() {
+        var history = ClipboardHistory(limit: 2)
+        let alpha = text("alpha")
+        _ = history.insert(alpha)
+        #expect(history.setPinned(true, for: alpha.id).isEmpty)
+        for word in ["beta", "gamma", "delta"] { _ = history.insert(text(word)) }
+        #expect(texts(history) == ["delta", "gamma", "alpha"])
+        #expect(history.pinned.map(\.id) == [alpha.id])
+        #expect(history.recent.count == 2)
+    }
+
+    @Test func clearKeepsThePinnedEntries() {
+        var history = ClipboardHistory()
+        let alpha = text("alpha")
+        _ = history.insert(alpha)
+        _ = history.insert(text("beta"))
+        _ = history.setPinned(true, for: alpha.id)
+        #expect(history.clear().count == 1)
+        #expect(texts(history) == ["alpha"])
+        #expect(history.remove(alpha.id)?.pinned == true)
+    }
+
+    @Test func aSecondCopyKeepsThePin() {
+        var history = ClipboardHistory()
+        let alpha = text("alpha")
+        _ = history.insert(alpha)
+        _ = history.setPinned(true, for: alpha.id)
+        _ = history.insert(text("beta"))
+        #expect(history.insert(text("alpha")).map(\.id) == [alpha.id])
+        #expect(texts(history) == ["alpha", "beta"])
+        #expect(history.entries[0].pinned)
+    }
+
+    @Test func withoutItsPinAnEntryCountsForTheLimit() {
+        var history = ClipboardHistory(limit: 1)
+        let alpha = text("alpha")
+        _ = history.insert(alpha)
+        _ = history.setPinned(true, for: alpha.id)
+        _ = history.insert(text("beta"))
+        #expect(history.setPinned(false, for: alpha.id).map(\.id) == [alpha.id])
+        #expect(texts(history) == ["beta"])
+        #expect(history.setPinned(true, for: UUID()).isEmpty)
+    }
+
+    @Test func anOldFileHasNoPins() throws {
+        let old = #"[{"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","date":0,"content":{"text":{"_0":"alpha"}}}]"#
+        let decoded = try JSONDecoder().decode([ClipboardEntry].self, from: Data(old.utf8))
+        #expect(decoded.map(\.pinned) == [false])
+        var pinned = decoded[0]
+        pinned.pinned = true
+        let again = try JSONDecoder().decode(ClipboardEntry.self, from: JSONEncoder().encode(pinned))
+        #expect(again == pinned)
+    }
+
     @Test(arguments: [
         ("hello", "hello"),
         ("  two\n\n  lines\t here ", "two lines here"),
