@@ -24,6 +24,9 @@ struct MenuView: View {
         }
         if settings.clipboardHistory {
             Divider()
+            // The search option is a switch for the shortcut only.
+            Button("Search the History…", systemImage: "magnifyingglass") { ClipboardSearch.shared.show() }
+                .keyboardShortcut(settings.clipboardSearch ? KeyboardShortcut("v", modifiers: [.control, .option]) : nil)
             ClipboardMenu(clipboard: clipboard)
         }
         Divider()

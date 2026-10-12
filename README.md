@@ -230,6 +230,7 @@ account can read this folder. "Clear History" deletes the entries and the image 
 To search the history:
 
 1. Press Control-Option-V. A panel opens with a search field and the list of entries.
+   The item "Search the History…" in the menu opens the same panel.
 2. Type some words of the entry.
 3. Select the entry with the arrow keys.
 4. Press Return. KeySwitch pastes the entry into the front app.
