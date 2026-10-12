@@ -20,6 +20,6 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T007 Add the scenarios to `Sources/KeySwitch/SelfTest.swift`
 - [x] T008 Run `swift test`
-- [ ] T009 Run the end-to-end test
+- [x] T009 Run the end-to-end test
 - [x] T010 Describe the pin in `README.md`
 - [ ] T011 Check the Option-click in the menu and the pin button in the settings by hand
