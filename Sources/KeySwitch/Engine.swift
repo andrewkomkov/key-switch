@@ -32,6 +32,7 @@ final class Engine {
     @ObservationIgnored private var detector: Detector?
     @ObservationIgnored private var learner = WordLearner()
     @ObservationIgnored private var yoficator: Yoficator?
+    @ObservationIgnored private var emojiCodes = EmojiCodes(list: "")
     @ObservationIgnored private var layouts: [Layout] = []
     /// What the word looked like before the detector converted it.
     @ObservationIgnored private var autoConvertedFrom = ""
@@ -75,8 +76,9 @@ final class Engine {
         applicationActivated(NSWorkspace.shared.frontmostApplication)
 
         Task.detached(priority: .userInitiated) {
-            let (detector, technicalWords, yoficator) = Self.loadDetector()
+            let (detector, technicalWords, yoficator, emojiCodes) = Self.loadDetector()
             await MainActor.run {
+                self.emojiCodes = emojiCodes
                 self.detector = detector
                 self.technicalWords = technicalWords
                 self.yoficator = yoficator
@@ -109,19 +111,20 @@ final class Engine {
 
     // MARK: - Setup
 
-    private nonisolated static func loadDetector() -> (Detector?, Set<String>, Yoficator?) {
+    private nonisolated static func loadDetector() -> (Detector?, Set<String>, Yoficator?, EmojiCodes) {
         func list(_ name: String) -> String? {
             guard let url = Bundle.main.url(forResource: name, withExtension: "txt") else { return nil }
             return try? String(contentsOf: url, encoding: .utf8)
         }
-        guard let russian = list("ru"), let english = list("en") else { return (nil, [], nil) }
+        guard let russian = list("ru"), let english = list("en") else { return (nil, [], nil, EmojiCodes(list: "")) }
         let technical = list("en-tech") ?? ""
         let detector = Detector(models: [
             .russian(wordList: russian),
             .english(wordList: english + technical),
         ])
         let technicalWords = Set(technical.split(separator: "\n").map(String.init))
-        return (detector, technicalWords, list("ru-yo").map(Yoficator.init(dictionary:)))
+        return (detector, technicalWords, list("ru-yo").map(Yoficator.init(dictionary:)),
+                EmojiCodes(list: list("emoji") ?? ""))
     }
 
     private func refreshTrust() {
@@ -460,7 +463,33 @@ final class Engine {
 
     /// One automatic change for the finished word. The first function that acts wins.
     private func changeFinishedWord() -> Bool {
-        expandShortcut() || convertAutomatically() || fixCapitals() || correctTypo() || yoficate()
+        expandShortcut() || expandEmojiCode() || convertAutomatically() || fixCapitals() || correctTypo()
+            || yoficate()
+    }
+
+    /// Replaces a finished code such as `:fire:` with its emoji. A double Shift tap brings
+    /// the code back, the same as after a typo correction.
+    private func expandEmojiCode() -> Bool {
+        guard settings.emojiCodes,
+              !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
+              !buffer.autoConverted, !buffer.manuallyConverted, !buffer.typoCorrected,
+              !settings.isExcluded(focusedBundleID),
+              let layout = InputSources.current()
+        else { return false }
+
+        let keys = buffer.word
+        let typed = layout.text(for: keys)
+        guard typed.count == keys.count, !settings.exceptionSet.contains(Detector.core(of: typed)) else { return false }
+        // The colon is on a different key in a Russian layout, so the keys can be a code
+        // only in the English reading.
+        let english = layouts.first { $0.language == "en" }
+        guard let shown = emojiCodes.emoji(for: typed) ?? english.flatMap({ emojiCodes.emoji(for: $0.text(for: keys)) })
+        else { return false }
+
+        replace(count: keys.count, with: shown)
+        buffer.typoCorrected = true
+        typo = (typed, shown)
+        return true
     }
 
     /// Replaces a finished shortcut of the macOS text replacements with its phrase. A double

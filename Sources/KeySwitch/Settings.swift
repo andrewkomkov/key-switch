@@ -28,6 +28,7 @@ final class Settings {
     var yofication: Bool { didSet { defaults.set(yofication, forKey: Key.yofication) } }
     var fixCapitals: Bool { didSet { defaults.set(fixCapitals, forKey: Key.fixCapitals) } }
     var systemReplacements: Bool { didSet { defaults.set(systemReplacements, forKey: Key.systemReplacements) } }
+    var emojiCodes: Bool { didSet { defaults.set(emojiCodes, forKey: Key.emojiCodes) } }
     var clipboardHistory: Bool { didSet { defaults.set(clipboardHistory, forKey: Key.clipboardHistory) } }
     var clipboardLimit: Int { didSet { defaults.set(clipboardLimit, forKey: Key.clipboardLimit) } }
     var clipboardSearch: Bool { didSet { defaults.set(clipboardSearch, forKey: Key.clipboardSearch) } }
@@ -68,6 +69,7 @@ final class Settings {
         static let yofication = "yofication"
         static let fixCapitals = "fixCapitals"
         static let systemReplacements = "systemReplacements"
+        static let emojiCodes = "emojiCodes"
         static let caseGesture = "caseGesture"
         static let learnWords = "learnWords"
         static let learnedWords = "learnedWords"
@@ -92,6 +94,7 @@ final class Settings {
             Key.plainPaste: true,
             Key.fixCapitals: true,
             Key.systemReplacements: true,
+            Key.emojiCodes: true,
             Key.clipboardLimit: ClipboardHistory.defaultLimit,
             Key.clipboardSearch: true,
         ])
@@ -104,6 +107,7 @@ final class Settings {
         yofication = defaults.bool(forKey: Key.yofication)
         fixCapitals = defaults.bool(forKey: Key.fixCapitals)
         systemReplacements = defaults.bool(forKey: Key.systemReplacements)
+        emojiCodes = defaults.bool(forKey: Key.emojiCodes)
         caseGesture = defaults.bool(forKey: Key.caseGesture)
         learnWords = defaults.bool(forKey: Key.learnWords)
         let learnedWords = defaults.stringArray(forKey: Key.learnedWords) ?? []
