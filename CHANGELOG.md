@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0](https://github.com/andrewkomkov/key-switch/compare/v0.3.0...v0.4.0) (2026-10-12)
+
+
+### Features
+
+* paste without formatting on command-shift-v ([0ce580c](https://github.com/andrewkomkov/key-switch/commit/0ce580c6c0e7e563fb8f59eed417595c8879c5db))
+* paste without formatting on command-shift-v ([5e4efad](https://github.com/andrewkomkov/key-switch/commit/5e4efad596ea720a404aeceba320109a23974938))
+* put the letter yo back into russian words ([c9ee263](https://github.com/andrewkomkov/key-switch/commit/c9ee2631a57293f8bd62daf3b017ba7acaf6ddc9))
+* put the letter yo back into russian words ([d83d7f6](https://github.com/andrewkomkov/key-switch/commit/d83d7f68d9d288992e86457d76ccc71330194128))
+
 ## [0.3.0](https://github.com/andrewkomkov/key-switch/compare/v0.2.0...v0.3.0) (2026-10-09)
 
 
