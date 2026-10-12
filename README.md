@@ -128,6 +128,21 @@ The list has 106,654 word forms. It comes from the
 
 Tap Shift two times to get the typed word back. The word then becomes an exception.
 
+## Text replacements
+
+This option is on by default. The switch is "Use the text replacements of macOS in all
+apps" in the settings.
+
+macOS has a list of text replacements in System Settings, Keyboard, Text Replacements. For
+example, `omw` becomes `On my way!`. Some apps ignore the list: a Chromium browser, an
+Electron app, a terminal. KeySwitch reads the list of macOS and applies it in each app when
+you complete the shortcut with Space or Return. KeySwitch has no list of its own. Change the
+list in System Settings.
+
+KeySwitch ignores a shortcut with a space in it and a phrase with a line break.
+
+Tap Shift two times to get the shortcut back. The shortcut then becomes an exception.
+
 ## Learned words
 
 This option is off by default. Set "Learn the words that I type often" to on in the settings.
