@@ -14,6 +14,7 @@ final class Settings {
     var autoSwitch: Bool { didSet { defaults.set(autoSwitch, forKey: Key.autoSwitch) } }
     var caseGesture: Bool { didSet { defaults.set(caseGesture, forKey: Key.caseGesture) } }
     var selectionGestures: Bool { didSet { defaults.set(selectionGestures, forKey: Key.selectionGestures) } }
+    var plainPaste: Bool { didSet { defaults.set(plainPaste, forKey: Key.plainPaste) } }
     var learnWords: Bool { didSet { defaults.set(learnWords, forKey: Key.learnWords) } }
     /// Learned words as `language:word`.
     var learnedWords: [String] {
@@ -62,6 +63,7 @@ final class Settings {
         static let learnWords = "learnWords"
         static let learnedWords = "learnedWords"
         static let selectionGestures = "selectionGestures"
+        static let plainPaste = "plainPaste"
         static let excludedApps = "excludedApps"
         static let exceptions = "exceptions"
     }
@@ -75,6 +77,7 @@ final class Settings {
             Key.playSound: false,
             Key.caseGesture: true,
             Key.selectionGestures: true,
+            Key.plainPaste: true,
         ])
         isEnabled = defaults.bool(forKey: Key.isEnabled)
         shiftSwitches = defaults.bool(forKey: Key.shiftSwitches)
@@ -88,6 +91,7 @@ final class Settings {
         self.learnedWords = learnedWords
         learnedByLanguage = Self.byLanguage(learnedWords)
         selectionGestures = defaults.bool(forKey: Key.selectionGestures)
+        plainPaste = defaults.bool(forKey: Key.plainPaste)
         excludedApps = defaults.stringArray(forKey: Key.excludedApps) ?? []
         let exceptions = defaults.stringArray(forKey: Key.exceptions) ?? []
         self.exceptions = exceptions

@@ -49,6 +49,7 @@ final class Engine {
         static let space: UInt16 = 49
         static let backspace: UInt16 = 51
         static let returnKeys: Set<UInt16> = [36, 76]
+        static let v: UInt16 = 9
     }
 
     private init() {}
@@ -237,6 +238,11 @@ final class Engine {
         inserted = nil
         let flags = event.flags
         let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+        let modifiers = flags.intersection([.maskCommand, .maskControl, .maskAlternate, .maskShift])
+        if keyCode == KeyCode.v, modifiers == [.maskCommand, .maskShift], pastePlain() {
+            buffer.reset()
+            return false
+        }
         guard flags.isDisjoint(with: [.maskCommand, .maskControl, .maskAlternate]) else {
             buffer.reset()
             return true
@@ -347,6 +353,23 @@ final class Engine {
             inserted = result
             conversions += 1
         }
+    }
+
+    /// Pastes the text of the clipboard without its format. The clipboard gets its content
+    /// back. Returns `false` if the front app must get the keys.
+    private func pastePlain() -> Bool {
+        guard settings.plainPaste, !settings.isExcluded(focusedBundleID),
+              let text = NSPasteboard.general.string(forType: .string), !text.isEmpty
+        else { return false }
+        guard !selectionBusy else { return true }
+        selectionBusy = true
+        Task {
+            defer { selectionBusy = false }
+            let clipboard = Selection.snapshot()
+            await Selection.paste(text)
+            Selection.restore(clipboard)
+        }
+        return true
     }
 
     /// Replaces the word and its spaces with the same keys read in the active layout.
