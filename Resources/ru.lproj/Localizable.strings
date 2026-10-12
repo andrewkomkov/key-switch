@@ -51,3 +51,13 @@
 "A word that you type three times, or convert by hand, goes to the Learned list and counts as a dictionary word. The list is stored on this Mac." = "Слово, которое вы напечатали три раза или исправили вручную, попадает в список «Выученные» и считается словарным. Список хранится на этом Mac.";
 "No learned words" = "Нет выученных слов";
 "KeySwitch treats these words as dictionary words. Remove a word that got here by mistake." = "KeySwitch считает эти слова словарными. Удалите слово, если оно попало сюда по ошибке.";
+
+"Clipboard" = "Буфер обмена";
+"Nothing copied yet" = "Пока ничего не скопировано";
+"Earlier" = "Раньше";
+"Clear History" = "Очистить историю";
+"Image %lld × %lld" = "Картинка %lld × %lld";
+"Keep a clipboard history" = "Вести историю буфера обмена";
+"Entries to keep" = "Сколько записей хранить";
+"KeySwitch keeps the text and the images that you copy in a folder on this Mac, and shows them in its menu. Password managers mark their copies, and KeySwitch ignores those. A password that you copy from another app goes into the history." = "KeySwitch хранит скопированные текст и картинки в папке на этом Mac и показывает их в своём меню. Менеджеры паролей помечают свои копии, и KeySwitch их пропускает. Пароль, скопированный из другой программы, попадёт в историю.";
+"macOS does not let KeySwitch read the clipboard. Change this in System Settings, Privacy & Security." = "macOS не даёт KeySwitch читать буфер обмена. Это меняется в Системных настройках, раздел «Конфиденциальность и безопасность».";

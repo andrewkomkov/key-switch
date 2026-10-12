@@ -5,16 +5,17 @@ struct KeySwitchApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var settings = Settings.shared
     @State private var engine = Engine.shared
+    @State private var clipboard = ClipboardMonitor.shared
 
     var body: some Scene {
         MenuBarExtra {
-            MenuView(settings: settings, engine: engine, showOnboarding: delegate.showOnboarding)
+            MenuView(settings: settings, engine: engine, clipboard: clipboard, showOnboarding: delegate.showOnboarding)
         } label: {
             Image(systemName: settings.isEnabled && engine.isTrusted ? "shift.fill" : "shift")
         }
 
         SwiftUI.Settings {
-            SettingsView(settings: settings, engine: engine)
+            SettingsView(settings: settings, engine: engine, clipboard: clipboard)
         }
     }
 }
@@ -25,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Engine.shared.start()
+        ClipboardMonitor.shared.start()
         if let index = CommandLine.arguments.firstIndex(of: "--self-test") {
             let report = CommandLine.arguments.dropFirst(index + 1).first
             Task { await SelfTest(reportPath: report).run() }

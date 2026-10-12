@@ -26,6 +26,8 @@ final class Settings {
     private(set) var learnedByLanguage: [String: Set<String>]
     var fixTypos: Bool { didSet { defaults.set(fixTypos, forKey: Key.fixTypos) } }
     var yofication: Bool { didSet { defaults.set(yofication, forKey: Key.yofication) } }
+    var clipboardHistory: Bool { didSet { defaults.set(clipboardHistory, forKey: Key.clipboardHistory) } }
+    var clipboardLimit: Int { didSet { defaults.set(clipboardLimit, forKey: Key.clipboardLimit) } }
     var playSound: Bool { didSet { defaults.set(playSound, forKey: Key.playSound) } }
     /// Bundle identifiers of the apps where the detector is off.
     var excludedApps: [String] { didSet { defaults.set(excludedApps, forKey: Key.excludedApps) } }
@@ -66,6 +68,8 @@ final class Settings {
         static let learnedWords = "learnedWords"
         static let selectionGestures = "selectionGestures"
         static let plainPaste = "plainPaste"
+        static let clipboardHistory = "clipboardHistory"
+        static let clipboardLimit = "clipboardLimit"
         static let excludedApps = "excludedApps"
         static let exceptions = "exceptions"
     }
@@ -80,6 +84,7 @@ final class Settings {
             Key.caseGesture: true,
             Key.selectionGestures: true,
             Key.plainPaste: true,
+            Key.clipboardLimit: ClipboardHistory.defaultLimit,
         ])
         isEnabled = defaults.bool(forKey: Key.isEnabled)
         shiftSwitches = defaults.bool(forKey: Key.shiftSwitches)
@@ -95,6 +100,8 @@ final class Settings {
         learnedByLanguage = Self.byLanguage(learnedWords)
         selectionGestures = defaults.bool(forKey: Key.selectionGestures)
         plainPaste = defaults.bool(forKey: Key.plainPaste)
+        clipboardHistory = defaults.bool(forKey: Key.clipboardHistory)
+        clipboardLimit = defaults.integer(forKey: Key.clipboardLimit)
         excludedApps = defaults.stringArray(forKey: Key.excludedApps) ?? []
         let exceptions = defaults.stringArray(forKey: Key.exceptions) ?? []
         self.exceptions = exceptions

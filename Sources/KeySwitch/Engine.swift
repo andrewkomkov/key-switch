@@ -19,6 +19,8 @@ final class Engine {
 
     /// The event tap works and the language models are in memory.
     var isReady: Bool { tap != nil && detector != nil }
+    /// A selection gesture or a plain paste changes the clipboard at this time.
+    var isUsingClipboard: Bool { selectionBusy }
 
     @ObservationIgnored private let log = Logger(subsystem: "com.andrewkomkov.KeySwitch", category: "engine")
     @ObservationIgnored private let settings = Settings.shared
