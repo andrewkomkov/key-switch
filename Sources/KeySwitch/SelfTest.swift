@@ -570,9 +570,38 @@ final class SelfTest {
         if let plain = monitor.history.entries.first { monitor.togglePin(plain) }
         check("pin: a second change removes the pin", pinnedNames() == [] && names() == ["plain"], "\(names())")
 
+        let search = ClipboardSearch.shared, searchKeys: CGEventFlags = [.maskControl, .maskAlternate]
+        let savedClipboardSearch = settings.clipboardSearch
+        settings.clipboardSearch = true
+        await copy("omega")
+        await start(in: english)
+        post(9, down: true, flags: searchKeys)
+        post(9, down: false, flags: searchKeys)
+        await pause(0.6)
+        check("search: Control-Option-V opens the panel", search.isVisible, "the panel is closed")
+        search.query = "PLA"
+        let found = search.results.map { if case .text(let text) = $0.content { text } else { "image" } }
+        check("search: the query finds the entry", found == ["plain"], "\(found)")
+        search.pasteSelection()
+        await pause(1.0)
+        expect("search: the selected entry goes to the front app", text: "plain", layout: english)
+        checkHistory("search: the selected entry goes to the top", ["plain", "omega"])
+        search.show()
+        search.close()
+        await pause(0.3)
+        expect("search: a closed panel changes nothing", text: "plain", layout: english)
+        settings.clipboardSearch = false
+        await start(in: english)
+        post(9, down: true, flags: searchKeys)
+        post(9, down: false, flags: searchKeys)
+        await pause(0.6)
+        check("search option off: the panel stays closed", !search.isVisible, "the panel is open")
+        search.close()
+        settings.clipboardSearch = savedClipboardSearch
+
         settings.clipboardHistory = false
         await copy("delta")
-        checkHistory("clipboard option off again: nothing is added", ["plain"])
+        checkHistory("clipboard option off again: nothing is added", ["plain", "omega"])
         monitor.clear()
         checkHistory("clipboard: clear removes all entries", [])
 

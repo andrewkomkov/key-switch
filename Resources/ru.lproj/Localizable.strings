@@ -74,3 +74,6 @@
 "Replacements in System Settings" = "Замен в Системных настройках";
 "Open Keyboard Settings…" = "Открыть настройки клавиатуры…";
 "KeySwitch reads the list of System Settings, Keyboard, Text Replacements. It applies the list in the apps that ignore it, such as browsers and terminals. Double-tap Shift to undo: the shortcut becomes an exception." = "KeySwitch читает список из Системных настроек: «Клавиатура», «Замены текста». Он применяет его в программах, которые список не учитывают, например в браузерах и терминалах. Двойной Shift отменяет замену, и сокращение попадает в исключения.";
+"Search the history with ⌃⌥V" = "Искать в истории по ⌃⌥V";
+"Search the clipboard history" = "Поиск в истории буфера";
+"Nothing found" = "Ничего не найдено";

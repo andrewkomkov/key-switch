@@ -145,6 +145,26 @@ import KeySwitchCore
         #expect(again == pinned)
     }
 
+    @Test func searchFindsEachWordOfTheQuery() {
+        var history = ClipboardHistory()
+        for word in ["Невский проспект, 28", "nevsky prospect", "Café Zürich"] { _ = history.insert(text(word)) }
+        _ = history.insert(image("abc"))
+        let pinned = text("pinned note")
+        _ = history.insert(pinned)
+        _ = history.insert(text("newest"))
+        _ = history.setPinned(true, for: pinned.id)
+
+        func found(_ query: String) -> [String] { texts(ClipboardHistory(entries: history.search(query), limit: 100)) }
+        #expect(found("") == ["pinned note", "newest", "image", "Café Zürich", "nevsky prospect", "Невский проспект, 28"])
+        #expect(found("  ") == found(""))
+        #expect(found("НЕВСК") == ["Невский проспект, 28"])
+        #expect(found("28 невский") == ["Невский проспект, 28"])
+        #expect(found("cafe zurich") == ["Café Zürich"])
+        #expect(found("ne") == ["pinned note", "newest", "nevsky prospect"])
+        #expect(found("nevsky 28").isEmpty)
+        #expect(found("image").isEmpty)
+    }
+
     @Test(arguments: [
         ("hello", "hello"),
         ("  two\n\n  lines\t here ", "two lines here"),

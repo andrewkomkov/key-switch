@@ -188,6 +188,9 @@ final class Engine {
         case .flagsChanged:
             flagsChanged(event)
             return true
+        case .keyDown where ClipboardSearch.shared.isVisible:
+            // The search field gets the text as typed.
+            return true
         case .keyDown:
             return keyDown(event)
         default:
@@ -209,7 +212,7 @@ final class Engine {
             layoutBeforeTap = InputSources.current()
             if settings.shiftSwitches { selectNextLayout() }
         case .double:
-            guard settings.doubleShiftConverts else { break }
+            guard settings.doubleShiftConverts, !ClipboardSearch.shared.isVisible else { break }
             if buffer.typoCorrected {
                 revertTypo()
                 break
@@ -231,7 +234,7 @@ final class Engine {
         case .none, .single:
             break
         case .double, .repeated:
-            guard settings.caseGesture else { break }
+            guard settings.caseGesture, !ClipboardSearch.shared.isVisible else { break }
             if buffer.isEmpty {
                 transformSelection { CaseCycler.next($0) }
             } else {
@@ -246,6 +249,12 @@ final class Engine {
         let flags = event.flags
         let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
         let modifiers = flags.intersection([.maskCommand, .maskControl, .maskAlternate, .maskShift])
+        if keyCode == KeyCode.v, modifiers == [.maskControl, .maskAlternate],
+           settings.clipboardHistory, settings.clipboardSearch {
+            buffer.reset()
+            ClipboardSearch.shared.show()
+            return false
+        }
         if keyCode == KeyCode.v, modifiers == [.maskCommand, .maskShift], pastePlain() {
             buffer.reset()
             return false
