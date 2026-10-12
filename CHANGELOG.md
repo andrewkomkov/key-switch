@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/andrewkomkov/key-switch/compare/v0.7.0...v0.7.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* put the signing keychain in the search list on a runner ([4549445](https://github.com/andrewkomkov/key-switch/commit/45494452d17b6e6235a945ff81fdd07bedf1b071))
+* sign the release build on the runner ([3b1d871](https://github.com/andrewkomkov/key-switch/commit/3b1d87179a1c8e9ad45039ba8e106b83ef623913))
+
 ## [0.7.0](https://github.com/andrewkomkov/key-switch/compare/v0.6.0...v0.7.0) (2026-10-12)
 
 
