@@ -117,6 +117,25 @@ stay as typed. A word in capitals only also stays.
 
 Tap Shift two times to get the typed word back. The word then becomes an exception.
 
+## Capital at the start of a sentence
+
+This option is off by default. Set "Capitalize the first word of a sentence" to on in the
+settings.
+
+macOS gives this capital only in the apps that use its text system. KeySwitch gives it in
+each app. When you complete a word after `.`, `!` or `?` and a space, the word gets a capital
+first letter: `Привет. как` becomes `Привет. Как`.
+
+KeySwitch keeps the word as typed in these cases:
+
+- The word before it is an abbreviation, such as `etc.` or `т.е.`, or one letter.
+- The word before it ends with an ellipsis.
+- The word has a capital, a digit or a symbol in it.
+- You moved the caret, or the word is the first one of a new line. KeySwitch knows only the
+  phrase that you typed.
+
+Tap Shift two times to get the typed word back. The word then becomes an exception.
+
 ## Typo correction
 
 This option is off by default. Set "Fix typos" to on in the settings.

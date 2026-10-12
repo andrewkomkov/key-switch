@@ -535,7 +535,7 @@ final class Engine {
                 exceptions: settings.exceptionSet)
         else { return false }
 
-        replace(count: keys.count, with: yoficated(withoutExtraCapitals(otherText, language: other.language)))
+        replace(count: keys.count, with: sentenceCased(yoficated(withoutExtraCapitals(otherText, language: other.language))))
         InputSources.select(other)
         buffer.autoConverted = true
         autoConvertedFrom = Detector.core(of: currentText)
@@ -556,7 +556,7 @@ final class Engine {
         let fixed = withoutExtraCapitals(typed, language: layout.language)
         guard typed.count == keys.count, fixed != typed else { return false }
 
-        let shown = yoficated(fixed)
+        let shown = sentenceCased(yoficated(fixed))
         replace(count: keys.count, with: shown)
         buffer.typoCorrected = true
         typo = (typed, shown)
@@ -583,21 +583,22 @@ final class Engine {
         let keys = buffer.word
         let typed = layout.text(for: keys)
         guard typed.count == keys.count,
-              let shown = TypoPolicy.correctedText(
+              let corrected = TypoPolicy.correctedText(
                 for: typed, exceptions: settings.exceptionSet,
                 rank: { detector.rank(of: $0, language: layout.language) },
                 isProtected: { self.technicalWords.contains($0.lowercased()) },
                 suggest: { SpellCorrector.correction(for: $0, language: layout.language) })
         else { return false }
 
+        let shown = sentenceCased(corrected)
         replace(count: keys.count, with: shown)
         buffer.typoCorrected = true
         typo = (typed, shown)
         return true
     }
 
-    /// Puts `ё` into the finished word. A double Shift tap brings the typed word back,
-    /// the same as after a typo correction.
+    /// The last step for a finished word: `ё`, and a capital at the start of a sentence.
+    /// A double Shift tap brings the typed word back, the same as after a typo correction.
     private func yoficate() -> Bool {
         guard !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
               !buffer.autoConverted, !buffer.manuallyConverted, !buffer.typoCorrected,
@@ -607,13 +608,22 @@ final class Engine {
 
         let keys = buffer.word
         let typed = layout.text(for: keys)
-        let shown = yoficated(typed)
+        let shown = sentenceCased(yoficated(typed))
         guard typed.count == keys.count, shown != typed else { return false }
 
         replace(count: keys.count, with: shown)
         buffer.typoCorrected = true
         typo = (typed, shown)
         return true
+    }
+
+    /// The text with a capital first letter if it starts a sentence and the option is on.
+    /// The word before it tells that: the user typed it in the layout that is active now.
+    private func sentenceCased(_ text: String) -> String {
+        guard settings.capitalizeSentences, let layout = InputSources.current(),
+              !settings.exceptionSet.contains(Detector.core(of: text))
+        else { return text }
+        return SentenceCase.capitalized(text, after: layout.text(for: buffer.previousWord)) ?? text
     }
 
     /// The text with `ё` in the words that need it, if the option is on.

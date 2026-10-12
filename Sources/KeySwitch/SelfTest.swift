@@ -14,7 +14,9 @@ final class SelfTest {
     private var lines: [String] = []
     private var failures = 0
     /// The test window lost the keyboard focus. No more keys are posted after that.
-    private var lostFocus = false
+    private var lostFocus = false { didSet { if lostFocus, !oldValue { focusState = describeFocus() } } }
+    /// What had the focus at the moment when the test window lost it.
+    private var focusState = ""
 
     // ANSI key codes. The same keys type `ghbdtn` in English and `привет` in Russian.
     private let privet: [CGKeyCode] = [5, 4, 11, 2, 17, 45]
@@ -46,6 +48,8 @@ final class SelfTest {
         settings.yofication = false
         let savedFixCapitals = settings.fixCapitals
         settings.fixCapitals = false
+        let savedCapitalizeSentences = settings.capitalizeSentences
+        settings.capitalizeSentences = false
         let savedEmojiCodes = settings.emojiCodes
         settings.emojiCodes = false
         let savedSystemReplacements = settings.systemReplacements
@@ -73,6 +77,7 @@ final class SelfTest {
         settings.fixCapitals = savedFixCapitals
         settings.systemReplacements = savedSystemReplacements
         settings.emojiCodes = savedEmojiCodes
+        settings.capitalizeSentences = savedCapitalizeSentences
         (settings.clipboardHistory, settings.clipboardLimit) = (savedClipboardHistory, savedClipboardLimit)
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
@@ -380,7 +385,46 @@ final class SelfTest {
         await capitalScenarios(english: english, russian: russian)
         await replacementScenarios(english: english)
         await emojiScenarios(english: english, russian: russian)
+        await sentenceScenarios(english: english, russian: russian)
         await clipboardScenarios(english: english, russian: russian)
+    }
+
+    /// A capital for the first word of a sentence.
+    private func sentenceScenarios(english: Layout, russian: Layout) async {
+        let stop: CGKeyCode = 47, slash: CGKeyCode = 44
+        settings.exceptions = []
+        await start(in: english)
+        await type(hello + [stop, space] + hello + [space])
+        expect("sentence option off: nothing changes", text: "hello. hello ", layout: english)
+
+        settings.capitalizeSentences = true
+        await start(in: english)
+        await type(hello + [stop, space] + hello + [space])
+        expect("sentence: the word after a full stop", text: "hello. Hello ", layout: english)
+        await doubleTapShift()
+        expect("sentence: double Shift brings the typed word back", text: "hello. hello ", layout: english)
+        check("sentence: the reverted word is an exception", settings.exceptions == ["hello"], "\(settings.exceptions)")
+        settings.exceptions = []
+
+        await start(in: english)
+        await type(hello, settle: 0)
+        await type([slash], shift: true, settle: 0)
+        await type([space] + hello + [returnKey])
+        expect("sentence: the word after a question mark, with Return", text: "hello? Hello\n", layout: english)
+        await start(in: english)
+        await type(hello + [space] + hello + [space])
+        expect("sentence: no mark, no capital", text: "hello hello ", layout: english)
+        await start(in: english)
+        await type(keys(for: "etc", in: english) + [stop, space] + hello + [space])
+        expect("sentence: an abbreviation is not an end", text: "etc. hello ", layout: english)
+        await start(in: english)
+        await type(hello + [stop, stop, stop, space] + hello + [space])
+        expect("sentence: an ellipsis is not an end", text: "hello... hello ", layout: english)
+
+        await start(in: english)
+        await type(hello + [stop, space] + privet + [space])
+        expect("sentence: a converted word gets the capital", text: "hello. Привет ", layout: russian)
+        settings.capitalizeSentences = false
     }
 
     /// Emoji codes: `:fire:` in English, the same keys in Russian.
@@ -679,6 +723,13 @@ final class SelfTest {
         NSApp.mainMenu = main
     }
 
+    private func describeFocus() -> String {
+        let front = NSWorkspace.shared.frontmostApplication?.localizedName ?? "?"
+        let key = NSApp.keyWindow.map { "\($0.className) \($0.title.debugDescription)" } ?? "none"
+        let responder = window?.firstResponder.map(\.className) ?? "none"
+        return "front app \(front), active \(NSApp.isActive), key window \(key), first responder \(responder)"
+    }
+
     private var hasFocus: Bool {
         NSApp.isActive && window?.isKeyWindow == true && window?.firstResponder === textView
     }
@@ -774,7 +825,7 @@ final class SelfTest {
 
     private func check(_ name: String, _ passed: Bool, _ detail: String) {
         if lostFocus {
-            fail(name, "the test window lost the keyboard focus")
+            fail(name, "the test window lost the keyboard focus (\(focusState))")
         } else if passed {
             lines.append("PASS  \(name)")
         } else {

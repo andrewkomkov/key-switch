@@ -34,6 +34,14 @@ public struct WordBuffer: Sendable {
     public var isEmpty: Bool { keys.isEmpty }
     public var word: [Keystroke] { Array(keys[wordStart..<wordEnd]) }
     public var trailingSpaces: [Keystroke] { Array(keys[wordEnd...]) }
+    /// The word before the last one, without spaces. Empty if the phrase has one word.
+    public var previousWord: [Keystroke] {
+        var end = wordStart
+        while end > 0, isSpace[end - 1] { end -= 1 }
+        var start = end
+        while start > 0, !isSpace[start - 1] { start -= 1 }
+        return Array(keys[start..<end])
+    }
     /// The span: what a conversion replaces.
     public var all: [Keystroke] { Array(keys[spanStart(words: extraWords + 1)...]) }
 
