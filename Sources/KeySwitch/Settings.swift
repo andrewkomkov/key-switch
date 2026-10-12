@@ -25,6 +25,7 @@ final class Settings {
     }
     private(set) var learnedByLanguage: [String: Set<String>]
     var fixTypos: Bool { didSet { defaults.set(fixTypos, forKey: Key.fixTypos) } }
+    var yofication: Bool { didSet { defaults.set(yofication, forKey: Key.yofication) } }
     var playSound: Bool { didSet { defaults.set(playSound, forKey: Key.playSound) } }
     /// Bundle identifiers of the apps where the detector is off.
     var excludedApps: [String] { didSet { defaults.set(excludedApps, forKey: Key.excludedApps) } }
@@ -59,6 +60,7 @@ final class Settings {
         static let autoSwitch = "autoSwitch"
         static let playSound = "playSound"
         static let fixTypos = "fixTypos"
+        static let yofication = "yofication"
         static let caseGesture = "caseGesture"
         static let learnWords = "learnWords"
         static let learnedWords = "learnedWords"
@@ -85,6 +87,7 @@ final class Settings {
         autoSwitch = defaults.bool(forKey: Key.autoSwitch)
         playSound = defaults.bool(forKey: Key.playSound)
         fixTypos = defaults.bool(forKey: Key.fixTypos)
+        yofication = defaults.bool(forKey: Key.yofication)
         caseGesture = defaults.bool(forKey: Key.caseGesture)
         learnWords = defaults.bool(forKey: Key.learnWords)
         let learnedWords = defaults.stringArray(forKey: Key.learnedWords) ?? []

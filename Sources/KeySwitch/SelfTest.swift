@@ -40,6 +40,8 @@ final class SelfTest {
         let savedFixTypos = settings.fixTypos, savedCaseGesture = settings.caseGesture
         let savedSelectionGestures = settings.selectionGestures, savedPlainPaste = settings.plainPaste
         settings.plainPaste = true
+        let savedYofication = settings.yofication
+        settings.yofication = false
         let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
         settings.learnWords = false
         settings.learnedWords = []
@@ -59,6 +61,7 @@ final class SelfTest {
         settings.caseGesture = savedCaseGesture
         settings.selectionGestures = savedSelectionGestures
         settings.plainPaste = savedPlainPaste
+        settings.yofication = savedYofication
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
         Selection.restore(savedClipboard)
@@ -283,6 +286,44 @@ final class SelfTest {
         await pasteCommand(shift: true)
         expect("paste: an excluded app gets the shortcut", text: "", layout: english)
         settings.excludedApps = []
+
+        let eshche = keys(for: "еще", in: russian), green = keys(for: "зеленый", in: russian)
+        await start(in: russian)
+        await type(eshche + [space])
+        expect("yo option off: nothing changes", text: "еще ", layout: russian)
+
+        settings.yofication = true
+        settings.exceptions = []
+        await start(in: russian)
+        await type(eshche + [space] + keys(for: "все", in: russian) + [returnKey])
+        expect("yo: еще gets the letter, все stays", text: "ещё все\n", layout: russian)
+        await start(in: russian)
+        await type(eshche, shift: true)
+        await type([space])
+        expect("yo: capitals stay capitals", text: "ЕЩЁ ", layout: russian)
+        await start(in: russian)
+        await type(eshche + [space])
+        await doubleTapShift()
+        expect("yo: double Shift brings the typed word back", text: "еще ", layout: russian)
+        check("yo: the reverted word is an exception", settings.exceptions == ["еще"], "\(settings.exceptions)")
+        await start(in: russian)
+        await type(eshche + [space])
+        expect("yo: an exception stays as typed", text: "еще ", layout: russian)
+        settings.exceptions = []
+
+        await start(in: english)
+        await type(green + [space])
+        expect("yo: a word from the incorrect layout gets the letter", text: "зелёный ", layout: russian)
+        await doubleTapShift()
+        expect("yo: double Shift undoes the conversion", text: "ptktysq ", layout: english)
+        settings.exceptions = []
+        settings.autoSwitch = false
+        await start(in: english)
+        await type(green)
+        await doubleTapShift()
+        expect("yo: a manual conversion gets the letter", text: "зелёный", layout: russian)
+        settings.autoSwitch = true
+        settings.yofication = false
 
         let git = keys(for: "гит", in: russian), approve = keys(for: "апрув", in: russian)
         let gitThreeTimes = git + [space] + git + [space] + git + [space]

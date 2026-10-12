@@ -103,6 +103,20 @@ KeySwitch keeps these words as typed:
 
 Tap Shift two times to get the typed word back. The word then becomes an exception.
 
+## The letter ё
+
+This option is off by default. Set "Put the letter ё back" to on in the settings.
+
+When you complete a Russian word, KeySwitch puts `ё` in place of `е` if the word always has
+`ё`. For example, `еще` becomes `ещё`, and `зеленый` becomes `зелёный`. A word with two correct spellings
+stays as typed, for example `все`. The same rule applies to a word that KeySwitch converts
+from the English layout.
+
+The list has 106,654 word forms. It comes from the
+[eyo-kernel](https://github.com/e2yo/eyo-kernel) project.
+
+Tap Shift two times to get the typed word back. The word then becomes an exception.
+
 ## Learned words
 
 This option is off by default. Set "Learn the words that I type often" to on in the settings.
@@ -148,5 +162,5 @@ The [release-please](https://github.com/googleapis/release-please) action makes 
 
 ## License
 
-The code has the [MIT license](LICENSE). The word lists have the CC BY-SA 4.0 license.
+The code has the [MIT license](LICENSE). The frequency lists have the CC BY-SA 4.0 license.
 See [Resources/NOTICE.md](Resources/NOTICE.md).

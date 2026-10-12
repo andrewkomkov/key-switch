@@ -39,7 +39,8 @@
 "Source code on GitHub" = "Исходный код на GitHub";
 "Fix typos" = "Исправлять опечатки";
 "Spelling" = "Правописание";
-"Uses the macOS spelling checker and replaces a word only when the correction is a frequent word. Double-tap Shift to undo: the word becomes an exception." = "Использует проверку правописания macOS и заменяет слово, только если исправление — частое слово. Двойной Shift отменяет замену, и слово попадает в исключения.";
+"Typo correction uses the macOS spelling checker and replaces a word only when the correction is a frequent word. The letter ё goes only into the words that always have it: еще becomes ещё, and все stays. Double-tap Shift to undo: the word becomes an exception." = "Исправление опечаток использует проверку правописания macOS и заменяет слово, только если исправление — частое слово. Буква ё ставится только в словах, где она есть всегда: «еще» станет «ещё», а «все» останется. Двойной Shift отменяет замену, и слово попадает в исключения.";
+"Put the letter ё back" = "Ставить букву ё";
 "Gestures" = "Жесты";
 "Double-tap Option to change the case" = "Двойной Option меняет регистр";
 "Each more Shift tap in a row takes one more word to the left. Each more Option tap gives the next case: hello, Hello, HELLO." = "Каждое следующее нажатие Shift подряд захватывает ещё одно слово слева. Каждое следующее нажатие Option даёт следующий регистр: hello, Hello, HELLO.";

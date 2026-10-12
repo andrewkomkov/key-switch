@@ -18,7 +18,7 @@ rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin_dir/KeySwitch" "$app/Contents/MacOS/"
 sed "s/__VERSION__/$version/g" Resources/Info.plist > "$app/Contents/Info.plist"
-cp Resources/AppIcon.icns Resources/ru.txt Resources/en.txt Resources/en-tech.txt "$app/Contents/Resources/"
+cp Resources/AppIcon.icns Resources/ru.txt Resources/en.txt Resources/en-tech.txt Resources/ru-yo.txt Resources/ru-yo.LICENSE.txt "$app/Contents/Resources/"
 cp -R Resources/en.lproj Resources/ru.lproj "$app/Contents/Resources/"
 
 local_keychain="$HOME/Library/Keychains/keyswitch-signing.keychain-db"

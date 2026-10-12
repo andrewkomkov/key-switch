@@ -29,6 +29,7 @@ final class Engine {
     @ObservationIgnored private var optionTaps = TapRecognizer()
     @ObservationIgnored private var detector: Detector?
     @ObservationIgnored private var learner = WordLearner()
+    @ObservationIgnored private var yoficator: Yoficator?
     @ObservationIgnored private var layouts: [Layout] = []
     /// What the word looked like before the detector converted it.
     @ObservationIgnored private var autoConvertedFrom = ""
@@ -70,10 +71,11 @@ final class Engine {
         applicationActivated(NSWorkspace.shared.frontmostApplication)
 
         Task.detached(priority: .userInitiated) {
-            let (detector, technicalWords) = Self.loadDetector()
+            let (detector, technicalWords, yoficator) = Self.loadDetector()
             await MainActor.run {
                 self.detector = detector
                 self.technicalWords = technicalWords
+                self.yoficator = yoficator
             }
         }
 
@@ -103,18 +105,19 @@ final class Engine {
 
     // MARK: - Setup
 
-    private nonisolated static func loadDetector() -> (Detector?, Set<String>) {
+    private nonisolated static func loadDetector() -> (Detector?, Set<String>, Yoficator?) {
         func list(_ name: String) -> String? {
             guard let url = Bundle.main.url(forResource: name, withExtension: "txt") else { return nil }
             return try? String(contentsOf: url, encoding: .utf8)
         }
-        guard let russian = list("ru"), let english = list("en") else { return (nil, []) }
+        guard let russian = list("ru"), let english = list("en") else { return (nil, [], nil) }
         let technical = list("en-tech") ?? ""
         let detector = Detector(models: [
             .russian(wordList: russian),
             .english(wordList: english + technical),
         ])
-        return (detector, Set(technical.split(separator: "\n").map(String.init)))
+        let technicalWords = Set(technical.split(separator: "\n").map(String.init))
+        return (detector, technicalWords, list("ru-yo").map(Yoficator.init(dictionary:)))
     }
 
     private func refreshTrust() {
@@ -254,7 +257,7 @@ final class Engine {
             buffer.deleteLast()
         } else if keyCode == KeyCode.space {
             detector?.learned = settings.learnedByLanguage
-            if convertAutomatically() || correctTypo() {
+            if convertAutomatically() || correctTypo() || yoficate() {
                 Typist.press(keyCode)
                 buffer.append(key, isSpace: true)
                 return false
@@ -263,7 +266,7 @@ final class Engine {
             buffer.append(key, isSpace: true)
         } else if KeyCode.returnKeys.contains(keyCode) {
             detector?.learned = settings.learnedByLanguage
-            let converted = convertAutomatically() || correctTypo()
+            let converted = convertAutomatically() || correctTypo() || yoficate()
             if !converted { countTypedWord() }
             buffer.reset()
             if converted {
@@ -376,7 +379,7 @@ final class Engine {
     private func convertManually() {
         let keys = buffer.all
         guard !keys.isEmpty, let target = InputSources.current() else { return }
-        replace(count: keys.count, with: target.text(for: keys))
+        replace(count: keys.count, with: yoficated(target.text(for: keys)))
         if buffer.autoConverted {
             settings.addException(autoConvertedFrom)
             buffer.autoConverted = false
@@ -462,7 +465,7 @@ final class Engine {
                 exceptions: settings.exceptionSet)
         else { return false }
 
-        replace(count: keys.count, with: otherText)
+        replace(count: keys.count, with: yoficated(otherText))
         InputSources.select(other)
         buffer.autoConverted = true
         autoConvertedFrom = Detector.core(of: currentText)
@@ -492,6 +495,32 @@ final class Engine {
         buffer.typoCorrected = true
         typo = (typed, shown)
         return true
+    }
+
+    /// Puts `ё` into the finished word. A double Shift tap brings the typed word back,
+    /// the same as after a typo correction.
+    private func yoficate() -> Bool {
+        guard !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
+              !buffer.autoConverted, !buffer.manuallyConverted, !buffer.typoCorrected,
+              !settings.isExcluded(focusedBundleID),
+              let layout = InputSources.current()
+        else { return false }
+
+        let keys = buffer.word
+        let typed = layout.text(for: keys)
+        let shown = yoficated(typed)
+        guard typed.count == keys.count, shown != typed else { return false }
+
+        replace(count: keys.count, with: shown)
+        buffer.typoCorrected = true
+        typo = (typed, shown)
+        return true
+    }
+
+    /// The text with `ё` in the words that need it, if the option is on.
+    private func yoficated(_ text: String) -> String {
+        guard settings.yofication, let yoficator else { return text }
+        return yoficator.restore(text, exceptions: settings.exceptionSet)
     }
 
     /// Brings back the typed spelling. The first Shift tap changed the layout, and the typo
