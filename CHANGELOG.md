@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.8.0](https://github.com/andrewkomkov/key-switch/compare/v0.7.1...v0.8.0) (2026-10-12)
+
+
+### Features
+
+* capitalize the first word of a sentence ([d39f874](https://github.com/andrewkomkov/key-switch/commit/d39f8744f7fd58d869cda243ec1e64918500f5c7))
+* capitalize the first word of a sentence ([547fa41](https://github.com/andrewkomkov/key-switch/commit/547fa41bbc5cca0106a1fd63054ee7d782aa2b37))
+* replace emoji codes with emoji ([083b4b9](https://github.com/andrewkomkov/key-switch/commit/083b4b97524abfd85be489bcd8140171adb5d2e5))
+* replace emoji codes with emoji ([35a8981](https://github.com/andrewkomkov/key-switch/commit/35a89816344623927b952046b33d53bd321c0c7e))
+* search the clipboard history with a shortcut ([ceb9ee0](https://github.com/andrewkomkov/key-switch/commit/ceb9ee08f3646d6505a97278d29eb649b93330f5))
+* search the clipboard history with a shortcut ([77774ed](https://github.com/andrewkomkov/key-switch/commit/77774ed840635718e2280d6c838daa62d22e9694))
+
 ## [0.7.1](https://github.com/andrewkomkov/key-switch/compare/v0.7.0...v0.7.1) (2026-10-12)
 
 
