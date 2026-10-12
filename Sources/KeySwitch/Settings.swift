@@ -30,6 +30,7 @@ final class Settings {
     var systemReplacements: Bool { didSet { defaults.set(systemReplacements, forKey: Key.systemReplacements) } }
     var clipboardHistory: Bool { didSet { defaults.set(clipboardHistory, forKey: Key.clipboardHistory) } }
     var clipboardLimit: Int { didSet { defaults.set(clipboardLimit, forKey: Key.clipboardLimit) } }
+    var clipboardSearch: Bool { didSet { defaults.set(clipboardSearch, forKey: Key.clipboardSearch) } }
     var playSound: Bool { didSet { defaults.set(playSound, forKey: Key.playSound) } }
     /// Bundle identifiers of the apps where the detector is off.
     var excludedApps: [String] { didSet { defaults.set(excludedApps, forKey: Key.excludedApps) } }
@@ -74,6 +75,7 @@ final class Settings {
         static let plainPaste = "plainPaste"
         static let clipboardHistory = "clipboardHistory"
         static let clipboardLimit = "clipboardLimit"
+        static let clipboardSearch = "clipboardSearch"
         static let excludedApps = "excludedApps"
         static let exceptions = "exceptions"
     }
@@ -91,6 +93,7 @@ final class Settings {
             Key.fixCapitals: true,
             Key.systemReplacements: true,
             Key.clipboardLimit: ClipboardHistory.defaultLimit,
+            Key.clipboardSearch: true,
         ])
         isEnabled = defaults.bool(forKey: Key.isEnabled)
         shiftSwitches = defaults.bool(forKey: Key.shiftSwitches)
@@ -110,6 +113,7 @@ final class Settings {
         plainPaste = defaults.bool(forKey: Key.plainPaste)
         clipboardHistory = defaults.bool(forKey: Key.clipboardHistory)
         clipboardLimit = defaults.integer(forKey: Key.clipboardLimit)
+        clipboardSearch = defaults.bool(forKey: Key.clipboardSearch)
         excludedApps = defaults.stringArray(forKey: Key.excludedApps) ?? []
         let exceptions = defaults.stringArray(forKey: Key.exceptions) ?? []
         self.exceptions = exceptions

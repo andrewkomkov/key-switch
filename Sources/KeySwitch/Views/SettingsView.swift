@@ -113,6 +113,7 @@ private struct ClipboardSettings: View {
                 ForEach(ClipboardHistory.limits, id: \.self) { Text($0, format: .number) }
             }
             .fixedSize()
+            Toggle("Search the history with ⌃⌥V", isOn: $settings.clipboardSearch)
             Text("KeySwitch keeps the text and the images that you copy in a folder on this Mac, and shows them in its menu. Password managers mark their copies, and KeySwitch ignores those. A password that you copy from another app goes into the history.")
                 .font(.footnote).foregroundStyle(.secondary)
             if NSPasteboard.general.accessBehavior == .alwaysDeny {

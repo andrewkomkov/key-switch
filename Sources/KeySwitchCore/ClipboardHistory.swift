@@ -115,6 +115,24 @@ public struct ClipboardHistory: Equatable, Sendable {
         return dropped
     }
 
+    /// The entries for a search panel: the pinned ones first. A text entry matches if it has
+    /// each word of the query, with no regard to case and diacritics. An image entry has no
+    /// text, so it shows only for an empty query.
+    public func search(_ query: String) -> [ClipboardEntry] {
+        let words = query.split(whereSeparator: \.isWhitespace).map { Self.folded(String($0)) }
+        let ordered = pinned + recent
+        guard !words.isEmpty else { return ordered }
+        return ordered.filter { entry in
+            guard case .text(let text) = entry.content else { return false }
+            let folded = Self.folded(text)
+            return words.allSatisfy(folded.contains)
+        }
+    }
+
+    private static func folded(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+    }
+
     /// One line for a menu: no line breaks, no long runs of spaces, a limited length.
     public static func title(for text: String, maxLength: Int = 60) -> String {
         let words = text.split(whereSeparator: \.isWhitespace)

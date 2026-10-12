@@ -196,6 +196,15 @@ The history ignores these items:
 The entries are in `~/Library/Application Support/KeySwitch/Clipboard`. Only your user
 account can read this folder. "Clear History" deletes the entries and the image files.
 
+To search the history:
+
+1. Press Control-Option-V. A panel opens with a search field and the list of entries.
+2. Type some words of the entry.
+3. Select the entry with the arrow keys.
+4. Press Return. KeySwitch pastes the entry into the front app.
+
+Escape closes the panel. The switch for this shortcut is "Search the history with ⌃⌥V".
+
 To keep an entry, pin it. There are two procedures:
 
 - Hold Option. Then click the entry in the menu.
