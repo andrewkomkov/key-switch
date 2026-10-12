@@ -1,6 +1,12 @@
 # Word list notice
 
-The MIT license of this repository applies to the code. A different license applies to these files:
+The MIT license of this repository applies to the code.
+
+The file `Resources/ru-yo.txt` is the "safe" dictionary of
+[eyo-kernel](https://github.com/e2yo/eyo-kernel) by Denis Seleznev, without changes. It has
+the MIT license of that project. The text of the license is in `Resources/ru-yo.LICENSE.txt`.
+
+A different license applies to these files:
 
 - `Resources/ru.txt`
 - `Resources/en.txt`
