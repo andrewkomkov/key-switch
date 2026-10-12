@@ -44,6 +44,8 @@ final class SelfTest {
         settings.clipboardHistory = false
         let savedYofication = settings.yofication
         settings.yofication = false
+        let savedFixCapitals = settings.fixCapitals
+        settings.fixCapitals = false
         let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
         settings.learnWords = false
         settings.learnedWords = []
@@ -64,6 +66,7 @@ final class SelfTest {
         settings.selectionGestures = savedSelectionGestures
         settings.plainPaste = savedPlainPaste
         settings.yofication = savedYofication
+        settings.fixCapitals = savedFixCapitals
         (settings.clipboardHistory, settings.clipboardLimit) = (savedClipboardHistory, savedClipboardLimit)
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
@@ -368,7 +371,53 @@ final class SelfTest {
         expect("learning: a conversion and a conversion back", text: "fghed", layout: english)
         check("learning: the conversion back teaches nothing", settings.learnedWords == [], "\(settings.learnedWords)")
 
+        await capitalScenarios(english: english, russian: russian)
         await clipboardScenarios(english: english, russian: russian)
+    }
+
+    /// Accidental capitals in a finished word.
+    private func capitalScenarios(english: Layout, russian: Layout) async {
+        func typeHello(capitals: Range<Int>) async {
+            for (index, key) in hello.enumerated() {
+                await type([key], shift: capitals.contains(index), settle: 0)
+            }
+            await type([space])
+        }
+        settings.exceptions = []
+        await start(in: english)
+        await typeHello(capitals: 0..<2)
+        expect("capitals option off: nothing changes", text: "HEllo ", layout: english)
+
+        settings.fixCapitals = true
+        await start(in: english)
+        await typeHello(capitals: 0..<2)
+        expect("capitals: HEllo + Space", text: "Hello ", layout: english)
+        await doubleTapShift()
+        expect("capitals: double Shift brings the typed word back", text: "HEllo ", layout: english)
+        check("capitals: the reverted word is an exception", settings.exceptions == ["hello"], "\(settings.exceptions)")
+        await start(in: english)
+        await typeHello(capitals: 0..<2)
+        expect("capitals: an exception stays as typed", text: "HEllo ", layout: english)
+        settings.exceptions = []
+
+        await start(in: english)
+        await typeHello(capitals: 1..<5)
+        expect("capitals: hELLO + Space", text: "Hello ", layout: english)
+        await start(in: english)
+        await typeHello(capitals: 0..<5)
+        expect("capitals: a word in capitals stays", text: "HELLO ", layout: english)
+        await start(in: english)
+        await typeHello(capitals: 0..<1)
+        expect("capitals: a correct word stays", text: "Hello ", layout: english)
+
+        await start(in: english)
+        await type(Array(privet.prefix(2)), shift: true, settle: 0)
+        await type(privet.dropFirst(2) + [space])
+        expect("capitals: a word from the incorrect layout gets one capital", text: "Привет ", layout: russian)
+        await doubleTapShift()
+        expect("capitals: double Shift undoes the conversion", text: "GHbdtn ", layout: english)
+        settings.exceptions = []
+        settings.fixCapitals = false
     }
 
     /// The clipboard history, in a temporary folder so that the real history stays as it is.
@@ -526,13 +575,13 @@ final class SelfTest {
         }
     }
 
-    private func type(_ keys: [CGKeyCode], shift: Bool = false) async {
+    private func type(_ keys: [CGKeyCode], shift: Bool = false, settle: Double = 0.4) async {
         for key in keys {
             post(key, down: true, flags: shift ? .maskShift : [])
             post(key, down: false, flags: shift ? .maskShift : [])
             await pause(0.03)
         }
-        await pause(0.4)
+        await pause(settle)
     }
 
     private func pasteCommand(shift: Bool) async {
