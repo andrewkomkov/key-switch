@@ -16,7 +16,7 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T006 Add the scenarios to `Sources/KeySwitch/SelfTest.swift`
 - [x] T007 Run `swift test`
-- [ ] T008 Run the end-to-end test
+- [x] T008 Run the end-to-end test
 - [x] T009 Describe the search in `README.md`
 - [ ] T010 Check by hand the look of the panel, the arrow keys, Escape and a click out of the panel
 - [ ] T011 Check by hand the paste into a different app: the front app must stay active
