@@ -29,6 +29,25 @@ of excluded apps also keeps its own function for this shortcut.
 - One English layout and one Russian layout in System Settings.
 - The Accessibility permission. KeySwitch needs it to read the keys and to type the correction.
 
+## Installation with Homebrew
+
+```sh
+brew install --cask andrewkomkov/tap/key-switch
+open -a KeySwitch
+```
+
+Then give the Accessibility permission.
+
+| Task | Command |
+| --- | --- |
+| Get a new version | `brew upgrade --cask key-switch` |
+| Remove the app | `brew uninstall --cask key-switch` |
+| Remove the app and its data | `brew uninstall --cask --zap key-switch` |
+
+Homebrew stops the app before an upgrade. Open the app again after it. The permission stays,
+because each release has the same signature. The release workflow writes each new version to
+the [tap](https://github.com/andrewkomkov/homebrew-tap).
+
 ## Installation from a release
 
 1. Download `KeySwitch.zip` from the [releases](https://github.com/andrewkomkov/key-switch/releases).
@@ -37,7 +56,8 @@ of excluded apps also keeps its own function for this shortcut.
 4. Open the app.
 5. Give the Accessibility permission.
 
-Step 3 is necessary because the release has an ad-hoc signature. Apple did not notarize it.
+Step 3 is necessary because the release has a self-signed signature. Apple did not notarize
+it. The Homebrew cask does this step for you.
 
 ## Installation from the source
 
