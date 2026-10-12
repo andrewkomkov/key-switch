@@ -21,6 +21,6 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T008 Add the scenarios to `Sources/KeySwitch/SelfTest.swift`
 - [x] T009 Run `swift test`
-- [ ] T010 Run the end-to-end test
+- [x] T010 Run the end-to-end test
 - [x] T011 Describe the option in `README.md`
 - [ ] T012 Check by hand an emoji and its revert in a Chromium browser and an Electron app
