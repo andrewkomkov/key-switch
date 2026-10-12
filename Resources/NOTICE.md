@@ -6,6 +6,11 @@ The file `Resources/ru-yo.txt` is the "safe" dictionary of
 [eyo-kernel](https://github.com/e2yo/eyo-kernel) by Denis Seleznev, without changes. It has
 the MIT license of that project. The text of the license is in `Resources/ru-yo.LICENSE.txt`.
 
+The file `Resources/emoji.txt` has the emoji codes of [gemoji](https://github.com/github/gemoji)
+by GitHub. `Scripts/make-emoji-list.py` makes it from `db/emoji.json` of that project: one
+line for each code. It has the MIT license of that project. The text of the license is in
+`Resources/emoji.LICENSE.txt`.
+
 A different license applies to these files:
 
 - `Resources/ru.txt`

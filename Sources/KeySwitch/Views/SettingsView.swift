@@ -67,6 +67,7 @@ private struct GeneralSettings: View {
             }
             Section {
                 Toggle("Use the text replacements of macOS in all apps", isOn: $settings.systemReplacements)
+                Toggle("Replace emoji codes such as :fire:", isOn: $settings.emojiCodes)
                 LabeledContent("Replacements in System Settings", value: SystemReplacements.current.count, format: .number)
                 Button("Open Keyboard Settings…") {
                     if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") {

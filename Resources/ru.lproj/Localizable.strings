@@ -77,3 +77,4 @@
 "Search the history with ⌃⌥V" = "Искать в истории по ⌃⌥V";
 "Search the clipboard history" = "Поиск в истории буфера";
 "Nothing found" = "Ничего не найдено";
+"Replace emoji codes such as :fire:" = "Заменять коды эмодзи вида :fire:";

@@ -46,6 +46,8 @@ final class SelfTest {
         settings.yofication = false
         let savedFixCapitals = settings.fixCapitals
         settings.fixCapitals = false
+        let savedEmojiCodes = settings.emojiCodes
+        settings.emojiCodes = false
         let savedSystemReplacements = settings.systemReplacements
         settings.systemReplacements = false
         let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
@@ -70,6 +72,7 @@ final class SelfTest {
         settings.yofication = savedYofication
         settings.fixCapitals = savedFixCapitals
         settings.systemReplacements = savedSystemReplacements
+        settings.emojiCodes = savedEmojiCodes
         (settings.clipboardHistory, settings.clipboardLimit) = (savedClipboardHistory, savedClipboardLimit)
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
@@ -376,7 +379,44 @@ final class SelfTest {
 
         await capitalScenarios(english: english, russian: russian)
         await replacementScenarios(english: english)
+        await emojiScenarios(english: english, russian: russian)
         await clipboardScenarios(english: english, russian: russian)
+    }
+
+    /// Emoji codes: `:fire:` in English, the same keys in Russian.
+    private func emojiScenarios(english: Layout, russian: Layout) async {
+        let colon: CGKeyCode = 41, fire = "\u{1F525}"
+        func typeCode(_ name: [CGKeyCode]) async {
+            await type([colon], shift: true, settle: 0)
+            await type(name, settle: 0)
+            await type([colon], shift: true, settle: 0)
+            await type([space])
+        }
+        let name = keys(for: "fire", in: english)
+        settings.exceptions = []
+        await start(in: english)
+        await typeCode(name)
+        expect("emoji option off: nothing changes", text: ":fire: ", layout: english)
+
+        settings.emojiCodes = true
+        await start(in: english)
+        await typeCode(name)
+        expect("emoji: a code + Space", text: fire + " ", layout: english)
+        await doubleTapShift()
+        expect("emoji: double Shift brings the code back", text: ":fire: ", layout: english)
+        check("emoji: the reverted code is an exception", settings.exceptions == ["fire"], "\(settings.exceptions)")
+        await start(in: english)
+        await typeCode(name)
+        expect("emoji: an exception stays as typed", text: ":fire: ", layout: english)
+        settings.exceptions = []
+
+        await start(in: english)
+        await typeCode(hello)
+        expect("emoji: an unknown code stays", text: ":hello: ", layout: english)
+        await start(in: russian)
+        await typeCode(name)
+        expect("emoji: the keys of a code in the Russian layout", text: fire + " ", layout: russian)
+        settings.emojiCodes = false
     }
 
     /// Text replacements, with a list of the test in place of the list of macOS.

@@ -163,6 +163,18 @@ KeySwitch ignores a shortcut with a space in it and a phrase with a line break.
 
 Tap Shift two times to get the shortcut back. The shortcut then becomes an exception.
 
+## Emoji codes
+
+This option is on by default. The switch is "Replace emoji codes such as :fire:" in the
+settings.
+
+An emoji code is a name between two colons: `:fire:`, `:+1:`, `:heart:`. When you complete
+a code with the Space key, KeySwitch puts the emoji in place of the code. The list has the 1,913 codes of GitHub and
+comes from the [gemoji](https://github.com/github/gemoji) project. The code also works when
+a Russian layout is active: press the same keys as for the English layout.
+
+Tap Shift two times to get the code back. The name of the code then becomes an exception.
+
 ## Learned words
 
 This option is off by default. Set "Learn the words that I type often" to on in the settings.
