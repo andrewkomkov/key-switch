@@ -28,4 +28,4 @@ A ticked task means that the code exists and that a test or a manual check passe
 - [x] T009 Check after the first release: the cask has the new version and hash
 - [x] T010 Check after the first release: the designated requirement is the same as for a local build
 - [x] T011 Install the app from the tap on this Mac and check that the event tap starts
-- [ ] T012 Check `brew upgrade` with the next release
+- [x] T012 Check `brew upgrade` with the next release
