@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/andrewkomkov/key-switch/compare/v0.5.0...v0.6.0) (2026-10-12)
+
+
+### Features
+
+* apply the text replacements of macOS in all apps ([993a720](https://github.com/andrewkomkov/key-switch/commit/993a7209183c3b7a4d490337f2ac78c4ed50e65f))
+* apply the text replacements of macOS in all apps ([117e341](https://github.com/andrewkomkov/key-switch/commit/117e3414500534e096442500c6a9fb2003306aba))
+* fix accidental capitals in a finished word ([f5b480a](https://github.com/andrewkomkov/key-switch/commit/f5b480a8744820ffa4ae80e87d6487e02deb68da))
+* fix accidental capitals in a finished word ([a7bade8](https://github.com/andrewkomkov/key-switch/commit/a7bade88ed69a91ae0a95395b42315701ba5ff3f))
+* pin entries of the clipboard history ([1384c25](https://github.com/andrewkomkov/key-switch/commit/1384c25c00cd0548c79d527cc10e94f7363e809f))
+* pin entries of the clipboard history ([653e3b6](https://github.com/andrewkomkov/key-switch/commit/653e3b6d06803da7d0a8e9b69146b17ca4ebbfa8))
+
 ## [0.5.0](https://github.com/andrewkomkov/key-switch/compare/v0.4.0...v0.5.0) (2026-10-12)
 
 
