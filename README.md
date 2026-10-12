@@ -131,12 +131,33 @@ A learned word counts as a frequent dictionary word. For example, after you lear
 KeySwitch converts `ubn` to `гит`. The "Learned" tab of the settings shows the list. You can
 remove each word there.
 
+## Clipboard history
+
+This option is off by default. Set "Keep a clipboard history" to on in the "Clipboard" tab
+of the settings.
+
+KeySwitch then keeps the text and the images that you copy. The menu of KeySwitch in the
+menu bar shows the entries, the newest first. Click an entry to put it in the clipboard
+again. The history holds 10, 25, 50 or 100 entries and stays after a restart.
+
+The history ignores these items:
+
+- an item that a password manager marks as concealed
+- copied files
+- the clipboard changes that KeySwitch makes for its own functions
+- text longer than 200,000 characters and an image larger than 20 MB
+
+The entries are in `~/Library/Application Support/KeySwitch/Clipboard`. Only your user
+account can read this folder. "Clear History" deletes the entries and the image files.
+
 ## Privacy
 
 - KeySwitch keeps the keys of the current word in memory. It deletes them when the caret moves.
 - The keys stay out of the disk and out of the log. The disk gets only single words: the
   exceptions, and the learned words when learning is on.
 - KeySwitch makes no network connections.
+- With the clipboard history on, the content that you copy is on the disk of this Mac. A
+  password that an app copies without the concealed mark goes into the history.
 - With typo correction on, a rare word goes to the spelling checker of macOS on this Mac.
 - macOS hides the keys of password fields from KeySwitch.
 

@@ -40,6 +40,8 @@ final class SelfTest {
         let savedFixTypos = settings.fixTypos, savedCaseGesture = settings.caseGesture
         let savedSelectionGestures = settings.selectionGestures, savedPlainPaste = settings.plainPaste
         settings.plainPaste = true
+        let savedClipboardHistory = settings.clipboardHistory, savedClipboardLimit = settings.clipboardLimit
+        settings.clipboardHistory = false
         let savedYofication = settings.yofication
         settings.yofication = false
         let savedLearnWords = settings.learnWords, savedLearnedWords = settings.learnedWords
@@ -62,6 +64,7 @@ final class SelfTest {
         settings.selectionGestures = savedSelectionGestures
         settings.plainPaste = savedPlainPaste
         settings.yofication = savedYofication
+        (settings.clipboardHistory, settings.clipboardLimit) = (savedClipboardHistory, savedClipboardLimit)
         settings.learnWords = savedLearnWords
         settings.learnedWords = savedLearnedWords
         Selection.restore(savedClipboard)
@@ -364,6 +367,105 @@ final class SelfTest {
         await doubleTapShift()
         expect("learning: a conversion and a conversion back", text: "fghed", layout: english)
         check("learning: the conversion back teaches nothing", settings.learnedWords == [], "\(settings.learnedWords)")
+
+        await clipboardScenarios(english: english, russian: russian)
+    }
+
+    /// The clipboard history, in a temporary folder so that the real history stays as it is.
+    private func clipboardScenarios(english: Layout, russian: Layout) async {
+        let monitor = ClipboardMonitor.shared, pasteboard = NSPasteboard.general
+        let folder = FileManager.default.temporaryDirectory.appending(path: "keyswitch-selftest-\(UUID().uuidString)")
+        monitor.useDirectory(folder)
+        settings.clipboardLimit = 25
+        func copy(_ text: String, mark: String? = nil) async {
+            pasteboard.clearContents()
+            pasteboard.setString(text, forType: .string)
+            if let mark { pasteboard.setData(Data(), forType: .init(mark)) }
+            await pause(0.8)
+        }
+        func names() -> [String] {
+            monitor.history.entries.map { if case .text(let text) = $0.content { text } else { "image" } }
+        }
+        func checkHistory(_ name: String, _ expected: [String]) {
+            check(name, names() == expected, "\(names()), expected \(expected)")
+        }
+
+        await copy("alpha")
+        checkHistory("clipboard option off: the history stays empty", [])
+        settings.clipboardHistory = true
+        await copy("alpha")
+        await copy("beta")
+        checkHistory("clipboard: the newest entry is first", ["beta", "alpha"])
+        await copy("alpha")
+        checkHistory("clipboard: a second copy moves the entry to the top", ["alpha", "beta"])
+        await copy("secret", mark: "org.nspasteboard.ConcealedType")
+        checkHistory("clipboard: a concealed item is ignored", ["alpha", "beta"])
+
+        let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: 4, pixelsHigh: 2, bitsPerSample: 8, samplesPerPixel: 4,
+            hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)
+        pasteboard.clearContents()
+        pasteboard.setData(bitmap?.representation(using: .png, properties: [:]), forType: .png)
+        await pause(0.8)
+        var imageFile = folder
+        if case .image(let file, let width, let height, _)? = monitor.history.entries.first?.content {
+            imageFile = folder.appending(path: file)
+            check("clipboard: an image becomes an entry with a file",
+                  width == 4 && height == 2 && FileManager.default.fileExists(atPath: imageFile.path),
+                  "\(width) x \(height), \(file)")
+        } else {
+            fail("clipboard: an image becomes an entry with a file", "\(names())")
+        }
+
+        if let beta = monitor.history.entries.last {
+            monitor.select(beta)
+            await pause(0.8)
+        }
+        check("clipboard: a selected entry goes to the clipboard",
+              pasteboard.string(forType: .string) == "beta", "\(pasteboard.string(forType: .string) ?? "nil")")
+        checkHistory("clipboard: a selected entry goes to the top", ["beta", "image", "alpha"])
+        if let image = monitor.history.entries.dropFirst().first {
+            monitor.select(image)
+            await pause(0.8)
+        }
+        check("clipboard: a selected image goes to the clipboard",
+              pasteboard.data(forType: .png) != nil, "\(pasteboard.types ?? [])")
+        checkHistory("clipboard: the image is on top", ["image", "beta", "alpha"])
+
+        Engine.shared.selectionThroughClipboardOnly = true
+        await start(in: english, text: "ghbdtn")
+        await tap(shift, .maskShift, times: 2, settle: 1.5)
+        expect("clipboard: the selection gesture still works", text: "привет", layout: russian)
+        Engine.shared.selectionThroughClipboardOnly = false
+        await copy("plain")
+        await start(in: english)
+        await pasteCommand(shift: true)
+        await pause(0.6)
+        expect("clipboard: the plain paste still works", text: "plain", layout: english)
+        checkHistory("clipboard: the changes of the app stay out", ["plain", "image", "beta", "alpha"])
+
+        let index = folder.appending(path: "history.json")
+        let mode = (try? FileManager.default.attributesOfItem(atPath: index.path))?[.posixPermissions] as? Int
+        check("clipboard: only the user can read the file", mode == 0o600, "mode \(mode.map { String($0, radix: 8) } ?? "nil")")
+        monitor.useDirectory(folder)
+        checkHistory("clipboard: the history stays after a restart", ["plain", "image", "beta", "alpha"])
+
+        settings.clipboardLimit = 2
+        await pause(0.8)
+        checkHistory("clipboard: a smaller limit drops the oldest", ["plain", "image"])
+        await copy("gamma")
+        checkHistory("clipboard: a new entry drops the oldest", ["gamma", "plain"])
+        check("clipboard: the file of a dropped image goes away",
+              !FileManager.default.fileExists(atPath: imageFile.path), imageFile.lastPathComponent)
+
+        settings.clipboardHistory = false
+        await copy("delta")
+        checkHistory("clipboard option off again: nothing is added", ["gamma", "plain"])
+        monitor.clear()
+        checkHistory("clipboard: clear removes all entries", [])
+
+        monitor.useDirectory(ClipboardMonitor.defaultDirectory)
+        try? FileManager.default.removeItem(at: folder)
     }
 
     // MARK: - Driving

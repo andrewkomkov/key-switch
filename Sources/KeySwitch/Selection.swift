@@ -13,6 +13,8 @@ enum Selection {
     }
 
     static let maxLength = 5000
+    /// Change count of the clipboard after the last write of this app.
+    static var lastOwnChange = -1
 
     static func read() -> Reading {
         var focused: CFTypeRef?
@@ -60,6 +62,7 @@ enum Selection {
         pasteboard.setString(text, forType: .string)
         // Tells clipboard managers not to keep this.
         pasteboard.setData(Data(), forType: .init("org.nspasteboard.TransientType"))
+        lastOwnChange = pasteboard.changeCount
         Typist.press(9, flags: .maskCommand)
         try? await Task.sleep(for: .milliseconds(300))
     }
@@ -80,5 +83,6 @@ enum Selection {
             for (type, data) in contents { item.setData(data, forType: type) }
             return item
         })
+        lastOwnChange = pasteboard.changeCount
     }
 }

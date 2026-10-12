@@ -12,6 +12,11 @@ There are two exceptions. The app stores the words that the user reverted. The a
 stores the words that it learned, but only after the user sets learning to on. In the two
 lists, an entry is one word. The user can see and remove each entry.
 
+The clipboard is not keystrokes, but it can hold private content. The app stores copied
+content only after the user sets the clipboard history to on. The files are readable by the
+user only. The user can see and remove each entry. The history ignores an item that its
+source marks as concealed.
+
 ### II. Keep the text of the user safe
 
 A conversion replaces text that the user typed. The gesture for a manual conversion MUST
@@ -50,7 +55,10 @@ check passed.
 This constitution is more important than convenience. An amendment is a pull request that
 changes this file and gives the reason. The amendment also changes the version below.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-09 | **Last Amended**: 2026-10-09
+**Version**: 1.2.0 | **Ratified**: 2026-10-09 | **Last Amended**: 2026-10-12
 
 Amendment 1.1.0: principle I permits the list of learned words. Feature 006 needs it, and
 the user asked for that feature.
+
+Amendment 1.2.0: principle I permits the clipboard history on the disk, only with the option
+on. Feature 009 needs it, and the user selected storage on the disk.

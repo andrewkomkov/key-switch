@@ -1,8 +1,10 @@
+import KeySwitchCore
 import SwiftUI
 
 struct SettingsView: View {
     @Bindable var settings: Settings
     let engine: Engine
+    let clipboard: ClipboardMonitor
 
     var body: some View {
         TabView {
@@ -10,6 +12,7 @@ struct SettingsView: View {
             Tab("Apps", systemImage: "app.badge.checkmark") { AppSettings(settings: settings) }
             Tab("Exceptions", systemImage: "text.badge.xmark") { ExceptionSettings(settings: settings) }
             Tab("Learned", systemImage: "graduationcap") { LearnedSettings(settings: settings) }
+            Tab("Clipboard", systemImage: "clipboard") { ClipboardSettings(settings: settings, clipboard: clipboard) }
             Tab("About", systemImage: "info.circle") { AboutView() }
         }
         .scenePadding()
@@ -82,6 +85,46 @@ private struct AppSettings: View {
             },
             empty: "No excluded apps",
             hint: "Automatic switching and ⌘⇧V are off in these apps. Add an app from the menu bar while it is in front.")
+    }
+}
+
+private struct ClipboardSettings: View {
+    @Bindable var settings: Settings
+    let clipboard: ClipboardMonitor
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            Toggle("Keep a clipboard history", isOn: $settings.clipboardHistory)
+            Picker("Entries to keep", selection: $settings.clipboardLimit) {
+                ForEach(ClipboardHistory.limits, id: \.self) { Text($0, format: .number) }
+            }
+            .fixedSize()
+            Text("KeySwitch keeps the text and the images that you copy in a folder on this Mac, and shows them in its menu. Password managers mark their copies, and KeySwitch ignores those. A password that you copy from another app goes into the history.")
+                .font(.footnote).foregroundStyle(.secondary)
+            if NSPasteboard.general.accessBehavior == .alwaysDeny {
+                Text("macOS does not let KeySwitch read the clipboard. Change this in System Settings, Privacy & Security.")
+                    .font(.footnote).foregroundStyle(.red)
+            }
+            List {
+                ForEach(clipboard.history.entries) { entry in
+                    HStack {
+                        ClipboardEntryLabel(entry: entry, clipboard: clipboard)
+                        Spacer()
+                        Button("Remove", systemImage: "minus.circle") { clipboard.remove(entry) }
+                            .labelStyle(.iconOnly)
+                            .buttonStyle(.borderless)
+                    }
+                }
+            }
+            .overlay {
+                if clipboard.history.entries.isEmpty {
+                    ContentUnavailableView("Nothing copied yet", systemImage: "tray")
+                }
+            }
+            .clipShape(.rect(cornerRadius: 10))
+            Button("Clear History", action: clipboard.clear)
+                .disabled(clipboard.history.entries.isEmpty)
+        }
     }
 }
 
