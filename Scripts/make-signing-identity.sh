@@ -46,5 +46,6 @@ security set-keychain-settings "$keychain"
 security unlock-keychain -p "$password" "$keychain"
 security import "$work/identity.p12" -k "$keychain" -P "$password" -T /usr/bin/codesign >/dev/null
 security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain" >/dev/null
+security find-identity -p codesigning "$keychain"
 
 echo "The identity \"$name\" is in $keychain"
