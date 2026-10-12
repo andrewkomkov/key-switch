@@ -21,10 +21,18 @@ jobs:
         run: swift --version
       - name: Test
         run: swift test
+      # The same step as in the release workflow, so that a pull request tests it.
+      # A pull request from a fork has no secret, and the build script signs ad hoc.
+      - name: Import the signing identity
+        env:
+          SIGNING_P12_BASE64: ${{ secrets.SIGNING_P12_BASE64 }}
+        run: |
+          if [ -n "$SIGNING_P12_BASE64" ]; then ./Scripts/make-signing-identity.sh; fi
       - name: Build the app
         run: ARCHS="arm64 x86_64" ./Scripts/build-app.sh
       - name: Check the bundle
         run: |
+          codesign --display --requirements - build/KeySwitch.app
           codesign --verify --strict --verbose=2 build/KeySwitch.app
           lipo -archs build/KeySwitch.app/Contents/MacOS/KeySwitch
           plutil -lint build/KeySwitch.app/Contents/Info.plist

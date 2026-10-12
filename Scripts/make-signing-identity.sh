@@ -46,5 +46,10 @@ security set-keychain-settings "$keychain"
 security unlock-keychain -p "$password" "$keychain"
 security import "$work/identity.p12" -k "$keychain" -P "$password" -T /usr/bin/codesign >/dev/null
 security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain" >/dev/null
+if [[ -n "${SIGNING_P12_BASE64:-}" ]]; then
+    # On a CI runner, codesign finds an identity only in a keychain of the search list.
+    security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+fi
+security find-identity -p codesigning "$keychain"
 
 echo "The identity \"$name\" is in $keychain"

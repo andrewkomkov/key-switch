@@ -77,11 +77,15 @@ import KeySwitchCore
         let words = Fixtures.words("Tests/KeySwitchCoreTests/Fixtures/ru-heldout.txt")
         let pairs = words.map { (Keyboard.asLatin($0), $0) }
         let clock = ContinuousClock()
-        let elapsed = clock.measure {
-            for (typed, wanted) in pairs {
-                _ = detector.shouldConvert(current: typed, language: "en", other: wanted, otherLanguage: "ru")
+        // The best of 3 rounds: other tests run at the same time and make one round slow.
+        let rounds = (0..<3).map { _ in
+            clock.measure {
+                for (typed, wanted) in pairs {
+                    _ = detector.shouldConvert(current: typed, language: "en", other: wanted, otherLanguage: "ru")
+                }
             }
         }
+        let elapsed = rounds.min() ?? .zero
         let microseconds = Double(elapsed.components.attoseconds) / 1e12 / Double(pairs.count)
             + Double(elapsed.components.seconds) * 1e6 / Double(pairs.count)
         print("microseconds per word: \(microseconds)")
