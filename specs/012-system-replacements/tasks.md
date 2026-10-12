@@ -23,7 +23,7 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T007 Add the scenarios to `Sources/KeySwitch/SelfTest.swift`
 - [x] T008 Run `swift test`
-- [ ] T009 Run the end-to-end test
+- [x] T009 Run the end-to-end test
 - [x] T010 Describe the option in `README.md`
 - [ ] T011 Check by hand that the app reads the real list of this Mac
 - [ ] T012 Check by hand a shortcut in a Chromium browser, an Electron app and a terminal
