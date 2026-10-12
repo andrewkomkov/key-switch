@@ -57,12 +57,13 @@ private struct GeneralSettings: View {
                 Text("A word that you type three times, or convert by hand, goes to the Learned list and counts as a dictionary word. The list is stored on this Mac.")
             }
             Section {
+                Toggle("Fix accidental capitals", isOn: $settings.fixCapitals)
                 Toggle("Fix typos", isOn: $settings.fixTypos)
                 Toggle("Put the letter ё back", isOn: $settings.yofication)
             } header: {
                 Text("Spelling")
             } footer: {
-                Text("Typo correction uses the macOS spelling checker and replaces a word only when the correction is a frequent word. The letter ё goes only into the words that always have it: еще becomes ещё, and все stays. Double-tap Shift to undo: the word becomes an exception.")
+                Text("A dictionary word such as HEllo gets one capital. Typo correction uses the macOS spelling checker and replaces a word only when the correction is a frequent word. The letter ё goes only into the words that always have it: еще becomes ещё, and все stays. Double-tap Shift to undo: the word becomes an exception.")
             }
             Section {
                 Toggle("Play a sound on conversion", isOn: $settings.playSound)

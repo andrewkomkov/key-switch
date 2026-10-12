@@ -86,6 +86,17 @@ One decision takes about 15 microseconds in a debug build.
 The file `specs/001-layout-switcher/plan.md` compares this method with three alternatives:
 a dictionary only, the system spelling checker, and a neural network.
 
+## Accidental capitals
+
+This option is on by default. The switch is "Fix accidental capitals" in the settings.
+
+When you complete a word with two capitals at the start, KeySwitch keeps only the first
+one: `ПРивет` becomes `Привет`. A word with the inverted pattern, such as `hELLO`, becomes
+`Hello`. KeySwitch changes only a word that its dictionary has. Thus `OSes`, `IDs` and `МВт`
+stay as typed. A word in capitals only also stays.
+
+Tap Shift two times to get the typed word back. The word then becomes an exception.
+
 ## Typo correction
 
 This option is off by default. Set "Fix typos" to on in the settings.

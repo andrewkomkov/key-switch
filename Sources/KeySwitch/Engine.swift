@@ -259,7 +259,7 @@ final class Engine {
             buffer.deleteLast()
         } else if keyCode == KeyCode.space {
             detector?.learned = settings.learnedByLanguage
-            if convertAutomatically() || correctTypo() || yoficate() {
+            if changeFinishedWord() {
                 Typist.press(keyCode)
                 buffer.append(key, isSpace: true)
                 return false
@@ -268,7 +268,7 @@ final class Engine {
             buffer.append(key, isSpace: true)
         } else if KeyCode.returnKeys.contains(keyCode) {
             detector?.learned = settings.learnedByLanguage
-            let converted = convertAutomatically() || correctTypo() || yoficate()
+            let converted = changeFinishedWord()
             if !converted { countTypedWord() }
             buffer.reset()
             if converted {
@@ -447,6 +447,11 @@ final class Engine {
         buffer.manuallyConverted = true
     }
 
+    /// One automatic change for the finished word. The first function that acts wins.
+    private func changeFinishedWord() -> Bool {
+        convertAutomatically() || fixCapitals() || correctTypo() || yoficate()
+    }
+
     /// Converts the finished word if the detector says that the layout was wrong.
     private func convertAutomatically() -> Bool {
         guard settings.autoSwitch, let detector,
@@ -467,11 +472,40 @@ final class Engine {
                 exceptions: settings.exceptionSet)
         else { return false }
 
-        replace(count: keys.count, with: yoficated(otherText))
+        replace(count: keys.count, with: yoficated(withoutExtraCapitals(otherText, language: other.language)))
         InputSources.select(other)
         buffer.autoConverted = true
         autoConvertedFrom = Detector.core(of: currentText)
         return true
+    }
+
+    /// Gives a finished word such as `ПРивет` one capital. A double Shift tap brings the
+    /// typed word back, the same as after a typo correction.
+    private func fixCapitals() -> Bool {
+        guard !buffer.isEmpty, buffer.trailingSpaces.isEmpty,
+              !buffer.autoConverted, !buffer.manuallyConverted, !buffer.typoCorrected,
+              !settings.isExcluded(focusedBundleID),
+              let layout = InputSources.current()
+        else { return false }
+
+        let keys = buffer.word
+        let typed = layout.text(for: keys)
+        let fixed = withoutExtraCapitals(typed, language: layout.language)
+        guard typed.count == keys.count, fixed != typed else { return false }
+
+        let shown = yoficated(fixed)
+        replace(count: keys.count, with: shown)
+        buffer.typoCorrected = true
+        typo = (typed, shown)
+        return true
+    }
+
+    /// The text with one capital in place of accidental ones, if the option is on.
+    private func withoutExtraCapitals(_ text: String, language: String) -> String {
+        guard settings.fixCapitals, let detector,
+              !settings.exceptionSet.contains(Detector.core(of: text))
+        else { return text }
+        return CaseFixer.fixed(text) { detector.rank(of: $0, language: language) != nil } ?? text
     }
 
     /// Replaces the finished word with the confident correction of the spelling checker.
