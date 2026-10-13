@@ -1,4 +1,4 @@
-// Draws the app icon and writes Resources/AppIcon.icns.
+// Draws the app icon and writes Resources/AppIcon.icns and docs/icon.png.
 // Usage: swift Scripts/make-icon.swift
 import AppKit
 
@@ -17,8 +17,10 @@ func render(_ size: CGFloat) -> Data {
     ])!.draw(in: shape, angle: -60)
 
     func draw(_ text: String, fontSize: CGFloat, weight: NSFont.Weight, at center: CGPoint, alpha: CGFloat) {
+        let base = NSFont.systemFont(ofSize: size * fontSize, weight: weight)
+        let font = base.fontDescriptor.withDesign(.rounded).flatMap { NSFont(descriptor: $0, size: size * fontSize) }
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: size * fontSize, weight: weight),
+            .font: font ?? base,
             .foregroundColor: NSColor.white.withAlphaComponent(alpha),
         ]
         let bounds = (text as NSString).size(withAttributes: attributes)
@@ -26,8 +28,8 @@ func render(_ size: CGFloat) -> Data {
             at: CGPoint(x: size * center.x - bounds.width / 2, y: size * center.y - bounds.height / 2),
             withAttributes: attributes)
     }
-    draw("⇧", fontSize: 0.46, weight: .bold, at: CGPoint(x: 0.5, y: 0.56), alpha: 1)
-    draw("A ⇄ Я", fontSize: 0.105, weight: .semibold, at: CGPoint(x: 0.5, y: 0.25), alpha: 0.9)
+    // One Latin and one Cyrillic letter, the same as on the menu bar icon.
+    draw("Aя", fontSize: 0.4, weight: .bold, at: CGPoint(x: 0.5, y: 0.5), alpha: 1)
     NSGraphicsContext.current = nil
     return bitmap.representation(using: .png, properties: [:])!
 }
@@ -46,3 +48,4 @@ iconutil.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
 iconutil.arguments = ["-c", "icns", iconset.path, "-o", "Resources/AppIcon.icns"]
 try iconutil.run()
 iconutil.waitUntilExit()
+try render(512).write(to: URL(fileURLWithPath: "docs/icon.png"))
