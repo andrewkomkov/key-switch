@@ -8,7 +8,7 @@ A ticked task means that the code exists and that a test or a manual check passe
 
 - [x] T001 [US1] Write the landing part of `README.md` and keep the reference sections
 - [x] T002 [US1] Compare the defaults in the table with `Sources/KeySwitch/Settings.swift`
-- [ ] T003 [US1] Set the description of the repository on GitHub
+- [x] T003 [US1] Set the description of the repository on GitHub
 
 ## Phase 2: User Story 2, a Russian page (P2)
 
