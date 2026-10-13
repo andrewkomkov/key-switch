@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/andrewkomkov/key-switch/compare/v0.9.0...v0.10.0) (2026-10-13)
+
+
+### Features
+
+* replace the shift arrow icon with a two-letter key ([#32](https://github.com/andrewkomkov/key-switch/issues/32)) ([53b5b0e](https://github.com/andrewkomkov/key-switch/commit/53b5b0e7283bcabdf2967d2e6b86711a2a3d28c6))
+
 ## [0.9.0](https://github.com/andrewkomkov/key-switch/compare/v0.8.0...v0.9.0) (2026-10-12)
 
 
