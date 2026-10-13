@@ -1,8 +1,90 @@
-# KeySwitch
+<!-- ste: all — the top of the page is promotional text by request of the owner -->
+<p align="center">
+  <img src="docs/icon.png" width="144" alt="KeySwitch icon">
+</p>
 
-KeySwitch is a keyboard layout switcher for macOS, like Punto Switcher and Caramba Switcher.
-It is a native menu bar app in Swift and SwiftUI. It uses system frameworks only and makes
-no network connections.
+<h1 align="center">KeySwitch</h1>
+
+<p align="center">
+  <b>You typed <code>ghbdtn</code>. You get <code>привет</code>.</b><br>
+  A free, native Punto Switcher for macOS. No account, no network, no telemetry.
+</p>
+
+<p align="center">
+  <a href="https://github.com/andrewkomkov/key-switch/releases/latest"><img src="https://img.shields.io/github/v/release/andrewkomkov/key-switch?label=release" alt="Latest release"></a>
+  <a href="https://github.com/andrewkomkov/key-switch/actions/workflows/ci.yml"><img src="https://github.com/andrewkomkov/key-switch/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/macOS-26%2B-blue" alt="macOS 26 or later">
+  <img src="https://img.shields.io/badge/Swift-6-orange" alt="Swift 6">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+</p>
+
+<p align="center">
+  <a href="README.ru.md">Читать по-русски</a>
+</p>
+
+<!-- ste: all — promotional text by request of the owner -->
+KeySwitch lives in the menu bar and fixes what you type, as you type it. It puts a word
+from the wrong keyboard layout into the right one, switches the layout for you, and takes
+care of a dozen small annoyances along the way. One double tap on Shift undoes any change.
+
+## Install
+
+```sh
+brew install --cask andrewkomkov/tap/key-switch
+open -a KeySwitch
+```
+
+Then give KeySwitch the Accessibility permission in the window that opens. That is all.
+
+You need macOS 26 or later, with one English and one Russian layout in System Settings.
+
+| Task | Command |
+| --- | --- |
+| Get a new version | `brew upgrade --cask key-switch` |
+| Remove the app | `brew uninstall --cask key-switch` |
+| Remove the app and its data | `brew uninstall --cask --zap key-switch` |
+
+Homebrew stops the app before an upgrade. Open the app again after it. The permission stays,
+because each release has the same signature. The release workflow writes each new version to
+the [tap](https://github.com/andrewkomkov/homebrew-tap).
+
+No Homebrew? See [Installation from a release](#installation-from-a-release) or
+[Installation from the source](#installation-from-the-source).
+
+## What it does
+
+| You do this | You get this | By default |
+| --- | --- | --- |
+| Type `ghbdtn` or `руддщ`, then Space | `привет` or `hello`, and the layout changes | On |
+| Tap Shift two times | The last word, or the selected text, in the other layout | On |
+| Tap Shift one time | The next keyboard layout | On |
+| Tap Option two times | `hello`, `Hello`, `HELLO` | On |
+| Type `ПРивет` | `Привет` | On |
+| Type `:fire:`, then Space | The fire emoji, in each app. 1,913 GitHub codes | On |
+| Type a macOS text replacement such as `omw` | `On my way!`, also in Chrome, Electron apps and terminals | On |
+| Press Command-Shift-V | Paste without the format | On |
+| Press Control-Option-V | Search in the clipboard history. Return pastes the entry | Off |
+| Type `recieve` or `севодня` | `receive` or `сегодня` | Off |
+| Type `еще` | `ещё` | Off |
+| Type `Привет. как` | `Привет. Как` | Off |
+
+Each option has a switch in the settings. Each automatic change has the same undo: tap
+Shift two times, and the typed word comes back and becomes an exception.
+
+## Why KeySwitch
+
+<!-- ste: all — promotional text by request of the owner -->
+- **Private by construction.** No network connections at all. The keys of the current word
+  stay in memory and never reach the disk or the log.
+- **Accurate.** It fixes 96.9% of wrong-layout Russian words and changes only 0.05% of
+  correct ones. The numbers come from the tests in this repository, not from a slide.
+- **Instant.** One decision takes about 15 microseconds. You do not see it happen.
+- **Easy to undo.** A wrong guess costs you one double tap, and it does not happen twice.
+- **Native and small.** Swift and SwiftUI, system frameworks only, about 6 MB. No Electron,
+  no helper processes, no login.
+- **Open.** MIT license. Each feature has a specification in `specs/` and tests.
+
+## Gestures
 
 | Gesture | Result |
 | --- | --- |
@@ -22,31 +104,6 @@ the old content back in the clipboard.
 Command-Shift-V works in each app that accepts Command-V. The clipboard keeps its original
 content. If the clipboard has no text, the front app gets the shortcut. An app in the list
 of excluded apps also keeps its own function for this shortcut.
-
-## Requirements
-
-- macOS 26 or later.
-- One English layout and one Russian layout in System Settings.
-- The Accessibility permission. KeySwitch needs it to read the keys and to type the correction.
-
-## Installation with Homebrew
-
-```sh
-brew install --cask andrewkomkov/tap/key-switch
-open -a KeySwitch
-```
-
-Then give the Accessibility permission.
-
-| Task | Command |
-| --- | --- |
-| Get a new version | `brew upgrade --cask key-switch` |
-| Remove the app | `brew uninstall --cask key-switch` |
-| Remove the app and its data | `brew uninstall --cask --zap key-switch` |
-
-Homebrew stops the app before an upgrade. Open the app again after it. The permission stays,
-because each release has the same signature. The release workflow writes each new version to
-the [tap](https://github.com/andrewkomkov/homebrew-tap).
 
 ## Installation from a release
 
