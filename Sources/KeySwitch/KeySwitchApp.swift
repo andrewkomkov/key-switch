@@ -11,7 +11,7 @@ struct KeySwitchApp: App {
         MenuBarExtra {
             MenuView(settings: settings, engine: engine, clipboard: clipboard, showOnboarding: delegate.showOnboarding)
         } label: {
-            Image(systemName: settings.isEnabled && engine.isTrusted ? "shift.fill" : "shift")
+            Image(nsImage: settings.isEnabled && engine.isTrusted ? MenuBarIcon.active : MenuBarIcon.inactive)
         }
 
         SwiftUI.Settings {
