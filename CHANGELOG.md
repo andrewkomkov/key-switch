@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/andrewkomkov/key-switch/compare/v0.10.0...v0.11.0) (2026-10-14)
+
+
+### Features
+
+* move the clipboard history to the top of the menu ([#35](https://github.com/andrewkomkov/key-switch/issues/35)) ([c4db5a5](https://github.com/andrewkomkov/key-switch/commit/c4db5a5c82a7340dda1e2000de57ffde8563e6e0))
+
 ## [0.10.0](https://github.com/andrewkomkov/key-switch/compare/v0.9.0...v0.10.0) (2026-10-13)
 
 
